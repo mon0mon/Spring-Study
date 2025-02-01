@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ComposerSettings">
+    <execution />
+  </component>
+  <component name="DiscordProjectSettings">
+    <option name="show" value="ASK" />
+    <option name="description" value="" />
+  </component>
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
+  <component name="FrameworkDetectionExcludesConfiguration">
+    <file type="web" url="file://$PROJECT_DIR$/building-a-hypermedia-driven-restful-web-service" />
+    <file type="web" url="file://$PROJECT_DIR$/building-a-reactive-restful-web-service" />
+    <file type="web" url="file://$PROJECT_DIR$/building-a-restful-web-service" />
+    <file type="web" url="file://$PROJECT_DIR$/building-an-application-with-spring-boot" />
+    <file type="web" url="file://$PROJECT_DIR$/building-rest-services-with-spring" />
+    <file type="web" url="file://$PROJECT_DIR$/consuming-a-restful-web-service" />
+    <file type="web" url="file://$PROJECT_DIR$/creating-asynchronous-methods" />
+    <file type="web" url="file://$PROJECT_DIR$/handling-form-submission" />
+    <file type="web" url="file://$PROJECT_DIR$/messaging-stomp-websocket" />
+    <file type="web" url="file://$PROJECT_DIR$/REST-APIs/building-a-hypermedia-driven-restful-web-service" />
+    <file type="web" url="file://$PROJECT_DIR$/REST-APIs/consuming-a-restful-web-service" />
+    <file type="web" url="file://$PROJECT_DIR$/scheduling-tasks" />
+    <file type="web" url="file://$PROJECT_DIR$/uploading-files" />
+    <file type="web" url="file://$PROJECT_DIR$/validating-form-input" />
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_21" project-jdk-name="zulu-21" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/out" />
+  </component>
+</project>

@@ -1,0 +1,8 @@
+### GET all quotes
+GET http://localhost:8080/api
+
+### GET first quote
+GET http://localhost:8080/api/1
+
+### GET random quote
+GET http://localhost:8080/api/random

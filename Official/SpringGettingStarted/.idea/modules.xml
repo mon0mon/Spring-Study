@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/SpringGettingStarted.iml" filepath="$PROJECT_DIR$/SpringGettingStarted.iml" />
+      <module fileurl="file://$PROJECT_DIR$/building-a-hypermedia-driven-restful-web-service/building-a-hypermedia-driven-restful-web-service.iml" filepath="$PROJECT_DIR$/building-a-hypermedia-driven-restful-web-service/building-a-hypermedia-driven-restful-web-service.iml" />
+      <module fileurl="file://$PROJECT_DIR$/consuming-a-restful-web-service/consuming-a-restful-web-service.iml" filepath="$PROJECT_DIR$/consuming-a-restful-web-service/consuming-a-restful-web-service.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/creating-asynchronous-methods.main.iml" filepath="$PROJECT_DIR$/.idea/modules/creating-asynchronous-methods.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/handling-form-submission.main.iml" filepath="$PROJECT_DIR$/.idea/modules/handling-form-submission.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/messaging-stomp-websocket.main.iml" filepath="$PROJECT_DIR$/.idea/modules/messaging-stomp-websocket.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/scheduling-tasks.main.iml" filepath="$PROJECT_DIR$/.idea/modules/scheduling-tasks.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/uploading-files.main.iml" filepath="$PROJECT_DIR$/.idea/modules/uploading-files.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/validating-form-input.main.iml" filepath="$PROJECT_DIR$/.idea/modules/validating-form-input.main.iml" />
+    </modules>
+  </component>
+</project>

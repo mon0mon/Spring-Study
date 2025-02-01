@@ -1,0 +1,29 @@
+### GET employees list
+GET http://localhost:8080/employees
+
+### Get single employee
+GET http://localhost:8080/employees/1
+
+### EmployeeNotFoundException
+GET http://localhost:8080/employees/100
+
+### Register new employee
+POST http://localhost:8080/employees
+Content-Type: application/json
+
+{
+  "name": "spring",
+  "role": "framework"
+}
+
+### Edit employee
+PUT http://localhost:8080/employees/1
+Content-Type: application/json
+
+{
+  "name": "tom",
+  "role": "manager"
+}
+
+### Delete employee
+DELETE http://localhost:8080/employees/3

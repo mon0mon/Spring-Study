@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Gradle Imported" enabled="true">
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-configuration-processor/3.4.2/4f9e3e0c959aaf5fb24fd885f9ce201d8643f0dc/spring-boot-configuration-processor-3.4.2.jar" />
+          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.36/5a30490a6e14977d97d9c73c924c1f1b5311ea95/lombok-1.18.36.jar" />
+        </processorPath>
+        <module name="messaging-stomp-websocket.main" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="building-a-hypermedia-driven-restful-web-service" target="21" />
+      <module name="consuming-a-restful-web-service" target="21" />
+      <module name="crud-with-vaadin" target="21" />
+      <module name="crud-with-vaadin.main" target="21" />
+      <module name="crud-with-vaadin.test" target="21" />
+      <module name="evolution" target="21" />
+      <module name="evolution.main" target="21" />
+      <module name="evolution.test" target="21" />
+      <module name="links" target="21" />
+      <module name="links.main" target="21" />
+      <module name="links.test" target="21" />
+      <module name="nonrest" target="21" />
+      <module name="nonrest.main" target="21" />
+      <module name="nonrest.test" target="21" />
+      <module name="rest" target="21" />
+      <module name="rest.main" target="21" />
+      <module name="rest.test" target="21" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

@@ -1,0 +1,17 @@
+[versions]
+kotlin = "1.9.25"
+spring = "3.4.2"
+dependency-management = "1.1.7"
+
+[libraries]
+kotlin-jvm-gradle = { module = "org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin", version.ref = "kotlin" }
+spring-gradle = { module = "org.jetbrains.kotlin.plugin.spring:org.jetbrains.kotlin.plugin.spring.gradle.plugin", version.ref = "kotlin" }
+springboot-gradle = { module = "org.springframework.boot:org.springframework.boot.gradle.plugin", version.ref = "spring" }
+dependency-management-gradle = { module = "io.spring.dependency-management:io.spring.dependency-management.gradle.plugin", version.ref = "dependency-management" }
+jpa-gradle = { module = "org.jetbrains.kotlin.plugin.jpa:org.jetbrains.kotlin.plugin.jpa.gradle.plugin", version.ref = "kotlin" }
+
+[bundles]
+
+[plugins]
+multi-spring-core = { id = "multi.spring-core.convention" }
+multi-spring-batch = { id = "multi.spring-batch.convention" }
