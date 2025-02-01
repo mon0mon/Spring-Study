@@ -1,0 +1,10 @@
+spring:
+  profiles:
+    group:
+      uat: experimental-miner, ui-cards
+
+features:
+  miner:
+    experimental: true
+  ui:
+    cards: true
