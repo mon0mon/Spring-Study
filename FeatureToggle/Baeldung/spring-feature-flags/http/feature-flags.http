@@ -1,0 +1,2 @@
+# request current features
+GET http://localhost:8080/feature-flags
