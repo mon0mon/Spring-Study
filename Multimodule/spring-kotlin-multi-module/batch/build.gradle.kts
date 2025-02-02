@@ -4,3 +4,7 @@ plugins {
 //    id("multi.spring-batch.convention")
     alias(libs.plugins.multi.spring.batch)
 }
+
+dependencies {
+    implementation(project(":common"))
+}

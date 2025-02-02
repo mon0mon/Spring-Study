@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":common"))
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
 }
