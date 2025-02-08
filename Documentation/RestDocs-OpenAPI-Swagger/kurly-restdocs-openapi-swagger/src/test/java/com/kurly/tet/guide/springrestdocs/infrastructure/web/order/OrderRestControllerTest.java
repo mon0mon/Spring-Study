@@ -1,8 +1,8 @@
 package com.kurly.tet.guide.springrestdocs.infrastructure.web.order;
 
 import com.kurly.tet.guide.springrestdocs.application.order.OrderFacade;
+import com.kurly.tet.guide.springrestdocs.config.TestSecurityConfig;
 import com.kurly.tet.guide.springrestdocs.domain.exception.OrderNotFoundException;
-import com.kurly.tet.guide.springrestdocs.domain.exception.ProductNotFoundException;
 import com.kurly.tet.guide.springrestdocs.domain.order.OrderDto;
 import com.kurly.tet.guide.springrestdocs.domain.product.ProductDto;
 import org.junit.jupiter.api.DisplayName;
@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -17,7 +18,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.List;
-import java.util.UUID;
 
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -25,6 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 @DisplayName("주문API")
 @WebMvcTest({OrderRestController.class})
+@Import(TestSecurityConfig.class)
 class OrderRestControllerTest {
     @Autowired
     private MockMvc mockMvc;
