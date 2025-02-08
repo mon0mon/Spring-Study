@@ -1,0 +1,119 @@
+plugins {
+    id "org.springframework.boot" version "2.7.3"
+    id "io.spring.dependency-management" version "1.0.13.RELEASE"
+    id "org.asciidoctor.jvm.convert" version "3.3.2"
+    id "com.gorylenko.gradle-git-properties" version "2.4.1"
+    id "com.epages.restdocs-api-spec" version "0.16.2"
+    id "java"
+}
+
+group = "${projectGroup}"
+version = "${projectVersion}"
+sourceCompatibility = JavaVersion.VERSION_17
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+    asciidoctorExt
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    set("snippetsDir", file("build/generated-snippets"))
+}
+
+dependencies {
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("com.google.code.findbugs:jsr305:3.0.2")
+    //@see <a href="https://springdoc.org/#getting-started">springdoc-openapi getting started.</a
+    implementation("org.springdoc:springdoc-openapi-ui:1.6.11")
+    implementation("org.springdoc:springdoc-openapi-webmvc-core:1.6.11")
+
+    compileOnly("org.projectlombok:lombok")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    annotationProcessor("org.projectlombok:lombok")
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
+    //@see <a href="https://github.com/ePages-de/restdocs-api-spec">Spring REST Docs API specification Integration</a>
+    testImplementation("com.epages:restdocs-api-spec:0.16.2")
+    testImplementation("com.epages:restdocs-api-spec-mockmvc:0.16.2")
+
+    asciidoctorExt("org.springframework.restdocs:spring-restdocs-asciidoctor")
+}
+
+tasks.named("test") {
+    outputs.dir snippetsDir
+    useJUnitPlatform()
+}
+
+tasks.register("restDocsTest", Test) {
+    outputs.dir snippetsDir
+    useJUnitPlatform {
+        includeTags("restDocs")
+    }
+
+    finalizedBy "asciidoctor"
+    finalizedBy "openapi3"
+}
+
+/**
+ * <p>
+ * 개발환경에서만 API문서를 제공하고자 한다면 빌드태스크에 asciidoctor 를 추가합니다.
+ * asciidoctor 가 수행될 때 통합테스트 실행 태스크 restDocsTest 를 수행하기에
+ * restDocsTest 를 추가로 수행하지 않아도 됩니다.
+ * </p>
+ * @see <a href="https://asciidoctor.github.io/asciidoctor-gradle-plugin/development-3.x/user-guide/">Asciidoctor Gradle Plugin Suite</a>
+ *
+ * ex)<code>./gradlew clean asciidoctor build</code>
+ */
+tasks.named("asciidoctor") {
+    dependsOn restDocsTest
+
+    inputs.dir snippetsDir
+    configurations "asciidoctorExt"
+    baseDirFollowsSourceDir() // 원본파일작업은 .adoc 디렉터리 기준
+}
+
+openapi3 {
+    servers = [
+            { url = 'http://localhost:8080' },
+    ]
+    title = 'spring-rest-docs-guide'
+    description = 'Spring REST Docs 테스트 생성물 생성시 추가생성되는 OpenAPI 문서이용'
+    version = "${project.version}"
+    format = 'yaml'
+}
+
+tasks.register("apiBuild", GradleBuild) {
+    tasks = ["clean", "restDocsTest", "build"]
+}
+
+springBoot {
+    buildInfo()
+}
+
+gitProperties {
+    dateFormat = "yyyy-MM-dd'T'HH:mm:ss.Zz"
+    dateFormatTimeZone = "Asia/Seoul"
+    failOnNoGitDirectory = false
+}
+
+bootJar {
+    from("swagger-ui") {
+        into "BOOT-INF/classes/static/swagger"
+    }
+    from("${asciidoctor.outputDir}") {
+        into "BOOT-INF/classes/static/docs"
+    }
+    from("build/api-spec") {
+        into "BOOT-INF/classes/static/swagger"
+    }
+
+    archiveFileName.set "application.jar"
+}
