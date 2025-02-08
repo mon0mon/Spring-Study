@@ -255,7 +255,7 @@ class OrderRestControllerDocsTest {
                 .andDo(MockMvcRestDocumentation.document("get-v1-get-orders",
                         getDocumentRequest(),
                         getDocumentResponse(),
-                        requestParameters(
+                        queryParameters(
                                 parameterDescriptors
                         ),
                         responseFields(
@@ -267,7 +267,7 @@ class OrderRestControllerDocsTest {
                         getDocumentRequest(),
                         getDocumentResponse(),
                         resource(ResourceSnippetParameters.builder()
-                                .requestParameters(
+                                .queryParameters(
                                         parameterDescriptors
                                 )
                                 .responseFields(

@@ -9,7 +9,7 @@ import com.kurly.tet.guide.springrestdocs.infrastructure.web.product.ProductModi
 import com.kurly.tet.guide.springrestdocs.infrastructure.web.product.ProductSearchCondition;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;

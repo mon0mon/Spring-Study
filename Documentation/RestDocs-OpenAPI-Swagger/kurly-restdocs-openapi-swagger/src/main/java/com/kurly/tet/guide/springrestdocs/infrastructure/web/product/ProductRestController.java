@@ -4,10 +4,9 @@ import com.kurly.tet.guide.springrestdocs.domain.product.ProductDto;
 import com.kurly.tet.guide.springrestdocs.application.product.ProductFacade;
 import com.kurly.tet.guide.springrestdocs.infrastructure.web.common.dto.PageRequest;
 import com.kurly.tet.guide.springrestdocs.infrastructure.web.common.dto.PageResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
 
 @RestController
 public class ProductRestController {
@@ -19,7 +18,7 @@ public class ProductRestController {
 
 
     @GetMapping("/products")
-    public PageResponse<ProductDto> search(ProductSearchCondition searchCondition, @Valid PageRequest pageRequest) {
+    public PageResponse search(ProductSearchCondition searchCondition, @Valid PageRequest pageRequest) {
         return productFacade.search(searchCondition, pageRequest);
     }
 

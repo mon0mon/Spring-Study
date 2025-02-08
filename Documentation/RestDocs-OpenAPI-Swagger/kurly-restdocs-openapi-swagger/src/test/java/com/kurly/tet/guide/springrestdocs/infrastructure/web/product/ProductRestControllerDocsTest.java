@@ -153,7 +153,7 @@ class ProductRestControllerDocsTest {
                 .andDo(MockMvcRestDocumentation.document("get-v1-get-products",
                         getDocumentRequest(),
                         getDocumentResponse(),
-                        requestParameters(
+                        queryParameters(
                                 parameterDescriptors
                         ),
                         responseFields(
@@ -165,7 +165,7 @@ class ProductRestControllerDocsTest {
                         getDocumentRequest(),
                         getDocumentResponse(),
                         resource(ResourceSnippetParameters.builder()
-                                .requestParameters(
+                                .queryParameters(
                                         parameterDescriptors
                                 )
                                 .responseFields(
