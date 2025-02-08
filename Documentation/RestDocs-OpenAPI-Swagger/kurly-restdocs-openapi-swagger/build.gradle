@@ -78,6 +78,7 @@ tasks.register("restDocsTest", Test) {
  * ex)<code>./gradlew clean asciidoctor build</code>
  */
 tasks.named("asciidoctor") {
+    dependsOn test
     dependsOn restDocsTest
 
     inputs.dir snippetsDir
@@ -111,13 +112,14 @@ gitProperties {
 
 bootJar {
     from("swagger-ui") {
-        into "BOOT-INF/classes/static/swagger"
+        dependsOn asciidoctor
+        into "BOOT-INF/classes/static/swagger-ui"
     }
     from("${asciidoctor.outputDir}") {
         into "BOOT-INF/classes/static/docs"
     }
     from("build/api-spec") {
-        into "BOOT-INF/classes/static/swagger"
+        into "BOOT-INF/classes/static/swagger-ui"
     }
 
     archiveFileName.set "application.jar"
