@@ -34,11 +34,13 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
+    implementation("org.springframework.boot:spring-boot-starter-security")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
     testImplementation("com.epages:restdocs-api-spec-mockmvc:0.19.4")
     testImplementation("com.epages:restdocs-api-spec-gradle-plugin:0.19.4")
+    testImplementation("org.springframework.security:spring-security-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -93,7 +95,7 @@ tasks.register<Copy>("copyOpenApiDocs") {
     finalizedBy("injectOpenApiSpecToSwagger")
 }
 
-// 생성된 OpenAPI 3.0 문서를 src/main/resources/static/docs 에 복사
+// 생성된 OpenAPI 3.0 문서를 build/assets/static/swagger 에 복사
 tasks.register<Copy>("injectOpenApiSpecToSwagger") {
     from("${layout.projectDirectory}/swagger-ui")
     into(file("${layout.buildDirectory.get()}/assets/static/swagger"))
