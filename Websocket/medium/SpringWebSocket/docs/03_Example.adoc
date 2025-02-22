@@ -1,0 +1,138 @@
+:toc:
+:doctype: book
+:icons: font
+:icon-set: font-awesome
+:source-highlighter: highlightjs
+:toclevels: 4
+:sectlinks:
+:author: "mon0mon"
+:hardbreaks:
+
+= Example
+
+== Java Spring
+
+스프링 프레임워크는 웹소켓 클라이언트·서버 지원
+아래는 서버와 클라이언트 간 전이중 웹소켓 텍스트 통신 구현 예시
+
+스프링 부트 애플리케이션에서 웹소켓 설정 방법
+
+* 의존성 추가 → `spring-boot-starter-websocket` 의존성 pom.xml 또는 build.gradle에 추가
+* 웹소켓 구성 → 웹소켓 설정 위한 구성 클래스 생성
+
+[open]
+.WebSocketConfig.java
+--
+[source,java]
+----
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
+import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
+import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+
+@Configuration
+@EnableWebSocketMessageBroker
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
+    @Override
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.addEndpoint("/socket").withSockJS(); // SockJS 지원
+    }
+
+    @Override
+    public void configureMessageBroker(MessageBrokerRegistry config) {
+        config.enableSimpleBroker("/topic"); // 메시지 브로커 설정
+        config.setApplicationDestinationPrefixes("/app");
+    }
+}
+----
+--
+
+* 컨트롤러 생성 → 클라이언트 메시지 수신·응답 컨트롤러 생성
+
+[open]
+.WebSocketController.java
+--
+[source,java]
+----
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.stereotype.Controller;
+
+@Controller
+public class WebSocketController {
+
+    @MessageMapping("/send")
+    @SendTo("/topic/messages")
+    public String sendMessage(String message) {
+        return message; // 받은 메시지 그대로 반환
+    }
+}
+----
+--
+
+== JavaScript
+
+브라우저 클라이언트는 표준 웹소켓 브라우저 객체 사용해 서버 통신
+다음은 JavaScript로 웹소켓 클라이언트 설정 예시
+
+[open]
+.WebSocketClient.js
+--
+[source,javascript]
+----
+const socket = new WebSocket('ws://localhost:8080/socket');
+
+socket.onopen = function() {
+    console.log('웹소켓 연결 열림');
+    socket.send("Hello, server!"); // 서버에 메시지 전송
+};
+
+socket.onmessage = function(event) {
+    console.log('서버 메시지 수신', event.data);
+};
+
+socket.onclose = function() {
+    console.log('웹소켓 연결 종료');
+};
+
+socket.onerror = function(error) {
+    console.error('웹소켓 오류', error);
+};
+----
+--
+
+== Java Spring client
+
+자바 스프링 클라이언트는 스프링 웹소켓 이벤트 핸들러·구성 포함
+스프링 클라이언트에서 웹소켓 사용 위해 `spring-websocket` 의존성 추가 필요
+
+아래는 스프링 클라이언트 웹소켓 사용 예시
+
+[open]
+.WebSocketClientExample.java
+--
+[source,java]
+----
+import org.springframework.messaging.simp.stomp.StompSession;
+import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
+import org.springframework.web.socket.client.WebSocketClient;
+import org.springframework.web.socket.messaging.WebSocketStompClient;
+
+public class WebSocketClientExample {
+
+    public static void main(String[] args) {
+        WebSocketClient client = new StandardWebSocketClient();
+        WebSocketStompClient stompClient = new WebSocketStompClient(client);
+
+        stompClient.connect("ws://localhost:8080/socket", new StompSessionHandlerAdapter() {
+            @Override
+            public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
+                session.subscribe("/topic/messages", new MessageHandler());
+                session.send("/app/send", "Hello from Spring client!");
+            }
+        });
+    }
+}
+----
+--
