@@ -1,0 +1,11 @@
+:toc:
+:doctype: book
+:icons: font
+:icon-set: font-awesome
+:source-highlighter: highlightjs
+:toclevels: 4
+:sectlinks:
+:author: "mon0mon"
+:hardbreaks:
+
+= link:https://medium.com/swlh/websockets-with-spring-part-3-stomp-over-websocket-3dab4a21f397[WebSockets With Spring, Part 3: STOMP Over WebSocket]
