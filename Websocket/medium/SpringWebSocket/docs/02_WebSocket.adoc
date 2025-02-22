@@ -16,12 +16,11 @@
 > 전이중 통신 → 양쪽에서 동시에 메시지 주고받음
 반이중 통신 → 한 번에 한 방향 메시지 교환
 
-HTTP는 반이중 통신
+HTTP는 반이중 통신::
 즉, 브라우저는 서버에 요청 보내거나 응답 수신 가능하지만 동시에 수행 불가
 이 한계 극복을 위해 여러 Comet 메커니즘은 업스트림·다운스트림 통신 위해 두 개 HTTP 연결 사용 → 추가 복잡성 유발
 
-웹소켓과 HTTP의 주요 차이
-
+웹소켓과 HTTP의 주요 차이::
 * HTTP는 텍스트 프로토콜, 웹소켓은 이진 프로토콜
 (이진 프로토콜은 네트워크 전송 데이터 양 소형)
 * HTTP는 요청·응답 헤더 존재, 웹소켓 메시지는 불필요한 메타데이터 없이 특정 애플리케이션 형식
@@ -105,16 +104,17 @@ WebSocket 연결을 위한 핸드쉐이크에서는 다음 과정이 포함된�
 * 서버에서는 +Connection: Upgrade+와 +Upgrade: websocket+ 헤더와 +101 Switching Protocols+ 응답을 보내야 함
 
 ==== Origin Policies Negotiation
-* 클라이언트는 +Origin+ 헤더를 통해 요청의 origin을 전달:
+* 클라이언트는 `Origin` 헤더를 통해 요청의 origin을 전달:
 ** schema, host, port를 포함
-* 서버는 +Access-Control-Allow-Origin+ 헤더를 통해 요청의 origin을 확인:
-** +*+로 모든 origin을 허용할 수 있음
+* 서버는 `Access-Control-Allow-Origin` 헤더를 통해 요청의 origin을 확인:
+** `*` 로 모든 origin을 허용할 수 있음
 
 ==== Protocol Negotiation
-* 클라이언트는 +Sec-WebSocket-Version+ 헤더를 통해 지원하는 WebSocket 버전과 +Sec-WebSocket-Key+ 헤더를 통해 랜덤한 키를 전달
+* `Sec-WebSocket-Version` 헤더를 통해 지원하는 WebSocket 버전 전달
+* `Sec-WebSocket-Key` 헤더를 통해 랜덤한 키를 전달
 ** link:https://datatracker.ietf.org/doc/html/rfc6455[RFC 6455]에 의하면 13을 사용해야 함
-* 서버는 +Sec-WebSocket-Accept+ 헤더를 통해 클라이언트의 키를 확인하고 +Sec-WebSocket-Protocol+ 헤더를 통해 서버가 지원하는 프로토콜을 전달
-** 클라이언트는 +Sec-WebSocket-Protocol+ 헤더를 통해 서버가 지원하는 프로토콜을 확인
+* 서버는 `Sec-WebSocket-Accept` 헤더를 통해 클라이언트의 키를 확인하고 `Sec-WebSocket-Protocol` 헤더를 통해 서버가 지원하는 프로토콜을 전달
+** 클라이언트는 `Sec-WebSocket-Protocol` 헤더를 통해 서버가 지원하는 프로토콜을 확인
 
 [open]
 .Sec-WebSocket-Accept 계산
@@ -136,13 +136,13 @@ public static void main(String[] args) {
 --
 
 ==== Subprotocol Negotiation
-* 클라이언트는 +Sec-WebSocket-Protocol+ 헤더를 통해, 서브 프로토콜 목록을 전달
-* 서버는 +Sec-WebSocket-Protocol+ 헤더를 통해, 최종적으로 선택된 서브 프로토콜을 전달:
+* 클라이언트는 `Sec-WebSocket-Protocol` 헤더를 통해, 서브 프로토콜 목록을 전달
+* 서버는 `Sec-WebSocket-Protocol` 헤더를 통해, 최종적으로 선택된 서브 프로토콜을 전달:
 ** 서버가 클라이언트로 전달 받은 서브 프로토콜을 지원하지 않는 경우, 연결 종료
 
 ==== Extension Negotiation
-* 클라이언트는 +Sec-WebSocket-Extensions+ 헤더를 통해, 확장 목록을 전달
-* 서버는 +Sec-WebSocket-Extensions+ 헤더를 통해, 하나 또는 둘 이상의 확장 목록을 선택하여 전달:
+* 클라이언트는 `Sec-WebSocket-Extensions` 헤더를 통해, 확장 목록을 전달
+* 서버는 `Sec-WebSocket-Extensions` 헤더를 통해, 하나 또는 둘 이상의 확장 목록을 선택하여 전달:
 ** 서버가 클라이언트로 전달 받은 확장을 지원하지 않더라도, 연결이 종료되지 않음
 
 성공적인 핸드쉐이크가 종료되고 나서, 클라이언트와 서버 간의 WebSocket 전이중 통신이 가능해짐
