@@ -1,0 +1,333 @@
+:toc:
+:doctype: book
+:icons: font
+:icon-set: font-awesome
+:source-highlighter: highlightjs
+:toclevels: 4
+:sectlinks:
+:author: "mon0mon"
+:hardbreaks:
+
+== Examples
+
+=== Introduction
+
+Spring Framework → _spring-websocket_ 모듈 내 웹소켓/SockJS 클라이언트·서버 지원
+다음 예제 → 서버와 클라이언트 간 전이중 웹소켓 텍스트 통신 구현 (SockJS 폴백 포함)
+
+서버와 클라이언트 알고리즘
+* 서버 → 클라이언트 일회성 메시지 전송
+* 서버 → 클라이언트 주기적 메시지 전송
+* 서버 → 클라이언트 메시지 수신 후 기록, 재전송
+* 클라이언트 → 서버 비주기적 메시지 전송
+* 클라이언트 → 서버 메시지 수신 후 기록
+
+서버 → Spring 웹 애플리케이션
+정적 웹 리소스 처리 위해 Spring Web MVC 사용
+한 클라이언트 → 자바스크립트 브라우저 클라이언트
+다른 클라이언트 → 자바 Spring 콘솔 애플리케이션
+
+=== Java Spring Server
+
+자바 스프링 서버 구성
+• Spring WebSocket 이벤트 핸들러
+• Spring WebSocket/SockJS 구성
+
+서버 → 텍스트(이진 아님) 메시지 사용
+이벤트 핸들러 → _WebSocketHandler_ 인터페이스 구현 (기존 _TextWebSocketHandler_ 확장)
+핸들러 → 클라이언트 메시지 수신 후 다시 전송 위해 _handleTextMessage_ 콜백 사용
+
+기존 Spring WebSocket 이벤트 핸들러 → 여러 클라이언트 브로드캐스트 미지원
+수동 구현 위해 _afterConnectionEstablished_·_afterConnectionClosed_ 메서드로
+활성 클라이언트 스레드 안전 목록 유지
+_@Scheduled_ 메서드 → 동일 _sendMessage_ 메서드 통해 활성 클라이언트 주기적 브로드캐스트
+
+[open]
+.ServerWebSocketHandler.java
+--
+[source,java]
+----
+public class ServerWebSocketHandler extends TextWebSocketHandler implements SubProtocolCapable {
+    private final Set<WebSocketSession> sessions = new CopyOnWriteArraySet<>();
+
+    @Override
+    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+        logger.info("서버 연결 열림");
+        sessions.add(session);
+        TextMessage message = new TextMessage("서버의 일회성 메시지");
+        logger.info("서버가 보냄: {}", message);
+        session.sendMessage(message);
+    }
+
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        logger.info("서버 연결 닫힘: {}", status);
+        sessions.remove(session);
+    }
+
+    @Scheduled(fixedRate = 10000)
+    void sendPeriodicMessages() throws IOException {
+        for (WebSocketSession session : sessions) {
+            if (session.isOpen()) {
+                String broadcast = "서버 주기적 메시지 " + LocalTime.now();
+                logger.info("서버가 보냄: {}", broadcast);
+                session.sendMessage(new TextMessage(broadcast));
+            }
+        }
+    }
+
+    @Override
+    public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+        String request = message.getPayload();
+        logger.info("서버가 수신: {}", request);
+        String response = String.format("서버에서 '%s'에 대한 응답", HtmlUtils.htmlEscape(request));
+        logger.info("서버가 보냄: {}", response);
+        session.sendMessage(new TextMessage(response));
+    }
+
+    @Override
+    public void handleTransportError(WebSocketSession session, Throwable exception) {
+        logger.info("서버 전송 오류: {}", exception.getMessage());
+    }
+
+    @Override
+    public List<String> getSubProtocols() {
+        return Collections.singletonList("subprotocol.demo.websocket");
+    }
+}
+----
+--
+
+> 서버의 Spring WebSocket 이벤트 핸들러 → 웹소켓과 SockJS 폴백 동일
+
+다음 Spring 구성
+_SockJS 폴백 사용 웹소켓 엔드포인트_ 등록
+@EnableWebSocket 주석 사용
+
+[open]
+.ServerWebSocketSockJsConfig.java
+--
+[source,java]
+----
+@Configuration
+@EnableWebSocket
+public class ServerWebSocketSockJsConfig implements WebSocketConfigurer {
+    @Override
+    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+        registry.addHandler(webSocketHandler(), "/websocket-sockjs")
+              .setAllowedOrigins("*")
+              .withSockJS()
+              .setWebSocketEnabled(true)
+              .setHeartbeatTime(25000)
+              .setDisconnectDelay(5000)
+              .setClientLibraryUrl("/webjars/sockjs-client/1.1.2/sockjs.js")
+              .setSessionCookieNeeded(false);
+    }
+
+    @Bean
+    public WebSocketHandler webSocketHandler() {
+        return new ServerWebSocketHandler();
+    }
+}
+----
+--
+
+구성 속성 예
+* _allowedOrigins_ → CORS 허용 출처 지정
+* _webSocketEnabled_ → 로드 밸런서 웹소켓 미지원 시 전송 비활성화
+* _heartbeatTime_ → 하트비트 프레임 전송 주기
+* _disconnectDelay_ → 만료 세션 종료 전 대기 시간
+* _clientLibraryUrl_ → iframe 기반 전송 위한 SockJS 자바스크립트 클라이언트 라이브러리 URL
+* _sessionCookieNeeded_ → 로드 밸런싱 위한 쿠키 필요 여부
+
+서버 → Spring Boot 웹 애플리케이션
+JavaScript 브라우저 클라이언트 위한 정적 웹 리소스 처리 위해 Spring Web MVC 사용
+하지만 Spring WebSocket 지원 → Spring MVC 비의존, 모든 Java Servlet 프레임워크 사용 가능
+
+[open]
+.ServerWebSocketSockJsApplication.java
+--
+[source,java]
+----
+@SpringBootApplication
+@EnableScheduling
+public class ServerWebSocketSockJsApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(ServerWebSocketSockJsApplication.class, args);
+    }
+}
+----
+--
+
+=== JavaScript Browser Client
+
+자바스크립트 브라우저 클라이언트 → [SockJS](https://github.com/sockjs/sockjs-client) 라이브러리의 _SockJS_ 객체 사용
+서버 URL 지정 시 “http” 스킴 사용 필수
+
+사용자가 ‘연결’ 버튼 클릭 시
+_SockJS_ 생성자로 서버 연결 시작
+(서버 URL, 서브프로토콜, 선택된 SockJS 전송 포함)
+연결 설정되면 _SockJS.onopen_ 콜백 호출
+
+[open]
+.application.js
+--
+[source,javascript]
+----
+let sockJS = null;
+
+// '연결' 버튼 클릭 핸들러
+function connect() {
+    const option = $("#transports").find('option:selected').val();
+    const transports = (option === 'all') ? [] : [option];
+    sockJS = new SockJS('http://localhost:8080/websocket-sockjs',
+        'subprotocol.demo.websocket', {debug: true, transports: transports});
+    sockJS.onopen = function () {
+        log('클라이언트 연결 열림');
+        console.log('서브프로토콜: ' + sockJS.protocol);
+        console.log('확장: ' + sockJS.extensions);
+    };
+    sockJS.onmessage = function (event) {
+        log('클라이언트 수신: ' + event.data);
+    };
+    sockJS.onerror = function (event) {
+        log('클라이언트 오류: ' + event);
+    };
+    sockJS.onclose = function (event) {
+        log('클라이언트 연결 닫힘: ' + event.code);
+    };
+}
+
+// '연결 끊기' 버튼 클릭 핸들러
+function disconnect() {
+    if (sockJS != null) {
+        sockJS.close();
+        sockJS = null;
+    }
+}
+
+// '전송' 버튼 클릭 핸들러
+function send() {
+    var message = $("#request").val();
+    log('클라이언트 전송: ' + message);
+    sockJS.send(message);
+}
+
+// 클라이언트 메시지 수신 시 _SockJS.onmessage_ 콜백 호출
+----
+--
+
+> 두 클라이언트 → 통신 객체 생성 외 거의 동일
+
+=== Java Spring Client
+
+자바 스프링 클라이언트 구성
+• Spring WebSocket 이벤트 핸들러 (기존 _TextWebSocketHandler_ 확장)
+핸들러 → 서버 메시지 수신 위해 _handleTextMessage_ 콜백,
+서버에 메시지 전송 위해 _sendMessage_ 메서드 사용
+
+[open]
+.ClientWebSocketHandler.java
+--
+[source,java]
+----
+public class ClientWebSocketHandler extends TextWebSocketHandler {
+    @Override
+    public void afterConnectionEstablished(WebSocketSession session) {
+        logger.info("클라이언트 연결 열림");
+    }
+
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        logger.info("클라이언트 연결 닫힘: {}", status);
+    }
+
+    @Override
+    public void handleTextMessage(WebSocketSession session, TextMessage message) {
+        logger.info("클라이언트 수신: {}", message);
+    }
+
+    @Override
+    public void handleTransportError(WebSocketSession session, Throwable exception) {
+        logger.info("클라이언트 전송 오류: {}", exception.getMessage());
+    }
+}
+----
+--
+
+> 클라이언트의 Spring WebSocket 이벤트 핸들러 → 동일
+
+다음 Spring 구성 → 클라이언트 웹소켓 지원 활성화
+_WebSocketConnectionManager_ 객체 정의, 두 개의 Spring 빈 사용
+
+• _SockJsClient_ 클래스 (스프링 웹소켓 의존성 내) → _WebSocketClient_ 인터페이스 구현
+• 구현된 _WebSocketHandler_ → 웹소켓 이벤트 처리
+
+[open]
+.ClientWebSocketSockJsConfig.java
+--
+[source,java]
+----
+@Configuration
+public class ClientWebSocketSockJsConfig {
+    @Bean
+    public WebSocketConnectionManager webSocketConnectionManager() {
+        WebSocketConnectionManager manager = new WebSocketConnectionManager(
+            webSocketClient(),
+            webSocketHandler(),
+            "http://localhost:8080/websocket-sockjs"
+        );
+        manager.setAutoStartup(true);
+        return manager;
+    }
+
+    @Bean
+    public WebSocketClient webSocketClient() {
+        List<Transport> transports = new ArrayList<>();
+        transports.add(new WebSocketTransport(new StandardWebSocketClient()));
+        transports.add(new RestTemplateXhrTransport());
+        return new SockJsClient(transports);
+    }
+
+    @Bean
+    public WebSocketHandler webSocketHandler() {
+        return new ClientWebSocketHandler();
+    }
+}
+----
+--
+
+> Spring 웹소켓 구성 → plain 웹소켓과 SockJS 폴백 거의 유사
+(사용되는 _WebSocketClient_ 인터페이스 구현만 다름)
+
+클라이언트 → Spring Web MVC 없는 콘솔 Spring Boot 애플리케이션
+
+[open]
+.ClientWebSocketSockJsApplication.java
+--
+[source,java]
+----
+@SpringBootApplication
+public class ClientWebSocketSockJsApplication {
+    public static void main(String[] args) {
+        new SpringApplicationBuilder(ClientWebSocketSockJsApplication.class)
+                .web(WebApplicationType.NONE)
+                .run(args);
+    }
+}
+----
+--
+
+== Conclusion
+
+브라우저와 네트워크 인프라에서 웹소켓 지원 미존재 상황 처리 위한 두 전략
+• _에뮬레이션_ → 웹소켓 API 최대한 에뮬레이션
+• _확장_ → 최상위 API 구축 후, 플래시·자바 플러그인 또는 코멧 기술 등 여러 전송 사용
+
+에뮬레이션 전략 → 웹소켓 프로토콜 위 추가 API 미제공, 추가 개발 필요
+그러나 모든 브라우저 → 결국 웹소켓 지원받게 될 상황 대비 장기적 유익
+
+많은 상업 운영자 제공 솔루션
+Kaazing WebSocket Gateway, PubNub, Pusher, Ably 등
+비준수·독점적이지만
+즉시 비즈니스 솔루션 도입, 웹 개발 시간·전문 지식 절감 위한 합리적 선택

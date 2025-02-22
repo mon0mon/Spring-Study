@@ -1,0 +1,147 @@
+:toc:
+:doctype: book
+:icons: font
+:icon-set: font-awesome
+:source-highlighter: highlightjs
+:toclevels: 4
+:sectlinks:
+:author: "mon0mon"
+:hardbreaks:
+
+== SockJS
+
+=== Design
+
+SockJS → 기존 웹소켓 브라우저 폴백 중 하나
+SockJS 구성
+• 프로토콜
+• 자바스크립트 브라우저 클라이언트
+• Node.js, Erlang, Ruby 서버
+그리고 다양한 언어·플랫폼 서드파티 SockJS 클라이언트·서버
+
+SockJS 설계 목표
+웹소켓 API 최대한 에뮬레이션
+웹소켓 서브프로토콜 사용 가능
+
+SockJS 설계 고려사항
+* 웹소켓 API에 근접한 간단한 브라우저 API
+* 플래시·자바 플러그인 없이 자바스크립트 전용
+* 스케일링 및 로드 밸런싱 기법 지원
+* 교차 도메인 통신·쿠키 지원
+* 빠른 연결 설정
+* 구형 브라우저·제한 프록시 상황에서 _우아한 저하_
+
+> `Graceful degradation`
+최신 브라우저 최상의 기능 사용하고
+구형 브라우저 필수 기능 제공 위한 폴백 원칙
+
+SockJS → 광범위 브라우저 버전 지원
+각 브라우저 → 최소 한 가지 롱 폴링 및 스트리밍 전송 제공
+스트리밍 전송 → *교차 도메인 통신*과 *쿠키* 지원 필요
+SockJS 메인 웹 애플리케이션과 다른 서버 호스팅 시
+교차 도메인 통신 필수
+쿠키 → 인증 및 로드 밸런서 쿠키 기반 *Stick Session* 위해 중요
+
+== SockJS and Same-Origin Policy
+
+`동일 출처 정책`
+웹 애플리케이션 보안 핵심
+`출처` → 스킴, 호스트 이름, 포트 번호 조합
+
+정책 → 한 출처 문서·스크립트가
+다른 출처 리소스 상호작용 방식 규정
+
+이미지, 소리, 비디오, 스타일시트, 글꼴, iframe 등
+출처 간 접근 가능
+스크립트도 로드 가능하나
+교차 출처 Ajax 호출 등 일부 동작 기본 비활성
+
+== SockJS and Load Balancers
+
+SockJS → 로드 밸런서에서 스티키 세션 지원
+스티키 세션 통해 로드 밸런서
+사용자 식별 후 모든 요청 특정 서버 라우팅
+애플리케이션 쿠키(예: HTTP 세션 위한 _JSESSIONID_) 활용
+
+일부 로드 밸런서 → 웹소켓 미지원
+이 경우 SockJS 전송 목록에서 웹소켓 제외 필요
+
+== SockJS Transports
+
+SockJS 전송 → 세 가지 범주
+네이티브 웹소켓, HTTP 스트리밍, HTTP 롱 폴링
+
+=== WebSocket Transport
+
+_웹소켓_
+최고 지연 시간·처리량 제공 전송
+교차 도메인 통신 내장 지원
+
+> 일부 브라우저·네트워크 중개자 → 웹소켓 미지원 상황 존재
+
+=== Streaming Transports
+
+SockJS 스트리밍 전송 → HTTP 1.1 _청크 전송 인코딩_ 기반
+서버에서 브라우저가 응답 여러 부분 수신 가능
+
+각 브라우저 → 서로 다른 스트리밍 전송 지원
+일반적으로 교차 도메인 통신 미지원
+SockJS → iframe 활용, 교차 문서 메시징으로 제한 극복
+
+SockJS 스트리밍 전송 종류
+* _xhr-streaming_ → _XMLHttpRequest_ 기반 스트리밍
+* _xdr-streaming_ → _XDomainRequest_ 기반 스트리밍
+* _eventsource_ → _EventSource_ 기반 전송 (서버 전송 이벤트)
+* _iframe-eventsource_ → _iframe_ 통한 _EventSource_ 전송
+* _htmlfile_ → ActiveXObject _HtmlFile_ 기반 전송
+* _iframe-htmlfile_ → _iframe_ 통한 ActiveXObject _HtmlFile_ 전송
+
+> XMLHttpRequest _(XHR)_
+Ajax 호출 위한 브라우저 인터페이스
+> XDomainRequest _(XDR)_
+Internet Explorer에서 Ajax 호출 위한, 현재는 사용 중단 인터페이스
+
+=== Polling Transports
+
+SockJS → 구형 브라우저 위한 폴링 전송 지원
+모든 방법 작동 안 될 때
+느리고 구형 JSONP 전송 사용
+
+SockJS 폴링 전송 종류
+* _xhr-polling_ → _XMLHttpRequest_ 기반
+* _xdr-polling_ → _XDomainRequest_ 기반
+* _iframe-xhr-polling_ → _iframe_ 통한 _XMLHttpRequest_ 기반
+* _jsonp-polling_ → _JSONP_ 기법 기반
+
+== SockJS Protocol
+
+SockJS 네트워크 프로토콜 구성
+1. SockJS 세션 매개변수 식별 위한 오프닝 핸드쉐이크
+2. 전이중 통신 위한 세션
+
+세션 시작 전, SockJS 클라이언트 → _/info_ 서버 URL GET 요청
+서버 응답 속성
+* _websocket_ → 웹소켓 전송 필요 여부
+* _cookie_needed_ → 쿠키 지원 필요 여부
+* _origins_ → 허용 출처 목록
+* _entropy_ → 난수 생성기 엔트로피 소스
+
+핸드쉐이크 후, 클라이언트 → 사용할 전송 결정
+가능하면 웹소켓 선택
+그렇지 않으면 대부분 브라우저 → 최소 한 가지 HTTP 스트리밍 전송 제공
+없으면 HTTP 롱 폴링 전송 사용
+
+SockJS 세션 동안, 클라이언트 → _/server/session/transport_ 서버 URL 요청
+여기서
+* _server_ → 클러스터 내 서버 식별자
+* _session_ → SockJS 세션 식별자
+* _transport_ → 전송 유형
+
+SockJS 클라이언트 → 다음 프레임 수신
+* “o” → 새로운 세션 설정 시 서버 오픈 프레임
+* “h” → 메시지 흐름 없을 때 서버 주기적 하트비트 프레임
+* “a” → JSON 인코딩된 메시지 배열 포함 메시지 프레임 (예: _a["Hello!"]_)
+* “c” → 세션 종료 위해 서버 종료 프레임 (코드와 종료 이유 포함, 예: _c[3000, "Go away!"]_)
+
+SockJS 서버 → 어떠한 프레이밍도 정의 없음
+모든 수신 데이터 → 단일 JSON 인코딩 메시지 또는 메시지 배열
