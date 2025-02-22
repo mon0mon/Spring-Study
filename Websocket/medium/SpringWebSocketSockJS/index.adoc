@@ -1,0 +1,12 @@
+:toc:
+:doctype: book
+:icons: font
+:icon-set: font-awesome
+:source-highlighter: highlightjs
+:toclevels: 4
+:sectlinks:
+:author: "mon0mon"
+:hardbreaks:
+
+= link:https://medium.com/swlh/websockets-with-spring-part-2-websocket-with-sockjs-fallback-1903cf8fe480[WebSockets With Spring, Part 2: WebSocket With SockJS Fallback]
+
