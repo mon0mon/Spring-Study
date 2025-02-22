@@ -9,3 +9,22 @@
 :hardbreaks:
 
 = link:https://medium.com/swlh/websockets-with-spring-part-3-stomp-over-websocket-3dab4a21f397[WebSockets With Spring, Part 3: STOMP Over WebSocket]
+
+== Introduction
+
+웹소켓 프로토콜::
+* HTTP 기반 솔루션 아키텍처 한계 극복 위해 설계
+* [.underline]#HTTP(요청-응답)와 다른 통신 모델(동시 양방향 메시징) 보유#
+** TCP 위 작동, 양방향 바이트 스트림 전송 가능
+** TCP 위 얇은 기능 제공, 이진·텍스트 _메시지_ 전송, 웹 보안 제약 제공
+* 지정된 메시지 형식이 없음
+
+웹소켓은 최대한 단순하게 설계
+
+* 클라이언트와 서버, 웹소켓 위 _서브프로토콜_ 사용 (추가 _프로토콜_ 복잡성 회피)
+
+.STOMP
+웹소켓 위 클라이언트 간 메시지 교환 위해 중개 서버(메시지 브로커) 통해 작동하는 애플리케이션 서브프로토콜 중 하나
+
+include::docs/01_STOMP.adoc[]
+
