@@ -1,5 +1,7 @@
 package xyz.mon0mon.springwebsocket;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -8,6 +10,7 @@ import java.util.Base64;
 /**
  * Sec-WebSocket-Accept 헤더의 값을 생성하는 클래스
  */
+@Slf4j
 public class SecWebSocketAccept {
 
     public static void main(String[] args) throws NoSuchAlgorithmException {
@@ -27,6 +30,6 @@ public class SecWebSocketAccept {
                 );
 
         //  Sec-WebSocket-Accept 헤더의 값
-        System.out.println(secWebSocketAccept); // O1a/o0MeFzoDgn+kCKR91UkYDO4=
+        log.info(secWebSocketAccept); // O1a/o0MeFzoDgn+kCKR91UkYDO4=
     }
 }
