@@ -4,12 +4,7 @@ spring:
       websocket
   data:
     mongodb:
-      username: root
-      password: 1234
-      host: localhost
-      port: 27017
-      database: chat_app
-      authentication-database: admin
+      uri: mongodb://root:1234@localhost/chat_app?authSource=admin
 
 server:
   port: 8088
