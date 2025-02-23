@@ -1,0 +1,6 @@
+== links
+
+* link:https://youtu.be/7T-HnTE6v64?si=q-EB1TZmjPR5av0V[Youtube]
+
+* link:https://github.com/ali-bouali/one-to-one-chat-spring-boot-web-socket[Github]
+
