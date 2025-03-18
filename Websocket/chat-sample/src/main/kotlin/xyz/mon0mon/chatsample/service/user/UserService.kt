@@ -1,11 +1,13 @@
 package xyz.mon0mon.chatsample.service.user
 
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import xyz.mon0mon.chatsample.domain.support.extension.findByIdOrThrow
 import xyz.mon0mon.chatsample.domain.user.User
 import xyz.mon0mon.chatsample.repository.user.UserRepository
+import xyz.mon0mon.chatsample.security.AccessTokenService
 
 
 @Service
@@ -41,23 +43,5 @@ class UserService(
 
     fun get(userId: Long): User {
         return userRepository.findByIdOrThrow(userId)
-    }
-}
-
-@Component
-class PasswordEncoder {
-    fun encode(password: String): String {
-        return password
-    }
-
-    fun matches(rawPassword: String, encodedPassword: String): Boolean {
-        return rawPassword == encodedPassword
-    }
-}
-
-@Component
-class AccessTokenService {
-    fun create(userId: Long): String {
-        return userId.toString()
     }
 }

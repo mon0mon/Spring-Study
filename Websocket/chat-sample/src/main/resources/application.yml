@@ -20,6 +20,11 @@ spring:
           validation:
             mode: none
       show-sql: true
+security:
+  jwt:
+    token:
+      secret-key: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      expire-length: 1800000 # 30분
 logging:
   level:
     xyz.mon0mon.chatsample: debug

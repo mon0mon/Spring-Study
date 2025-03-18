@@ -6,11 +6,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.scheduling.annotation.EnableScheduling
+import org.springframework.security.crypto.password.PasswordEncoder
 import xyz.mon0mon.chatsample.domain.chat.ChatRoom
 import xyz.mon0mon.chatsample.domain.user.User
 import xyz.mon0mon.chatsample.repository.chat.ChatRoomRepository
 import xyz.mon0mon.chatsample.repository.user.UserRepository
-import xyz.mon0mon.chatsample.service.user.PasswordEncoder
 
 private val logger = KotlinLogging.logger { }
 
