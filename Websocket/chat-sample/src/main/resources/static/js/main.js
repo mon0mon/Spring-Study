@@ -278,6 +278,7 @@ function onLogout() {
 function showLoginPage() {
     document.getElementById("login-page").classList.remove("hidden");
     document.getElementById("chat-page").classList.add("hidden");
+    document.getElementById("messageForm").classList.add("hidden");
 
     auth = null;
 }
@@ -285,6 +286,7 @@ function showLoginPage() {
 function showChatPage() {
     document.getElementById("login-page").classList.add("hidden");
     document.getElementById("chat-page").classList.remove("hidden");
+    document.getElementById("messageForm").classList.remove("hidden");
 
     auth = JSON.parse(decodeURIComponent(getCookie('user')))
     document.querySelector('#connected-user-username').textContent = auth.name;
