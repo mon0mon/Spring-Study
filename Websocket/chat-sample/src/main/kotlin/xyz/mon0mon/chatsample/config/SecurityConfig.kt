@@ -32,7 +32,7 @@ class SecurityConfig(
             .authorizeHttpRequests { authorize ->
                 authorize.requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
                 authorize.requestMatchers("/ws/**").permitAll()
-                authorize.requestMatchers("/index.html", "/js/**", "/css/**").permitAll()
+                authorize.requestMatchers("/index.html", "/js/**", "/css/**", "/img/**").permitAll()
                 authorize.requestMatchers(
                     HttpMethod.POST,
                     "/users", "/users/login"

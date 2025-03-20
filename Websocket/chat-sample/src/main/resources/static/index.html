@@ -34,9 +34,11 @@
             <div class="col-md-4 users-list bg-primary text-white p-3">
                 <h2>Chat Rooms</h2>
                 <ul id="connectedUsers" class="list-unstyled"></ul>
-                <div class="mt-3">
-                    <p id="connected-user-username"></p>
-                    <a class="logout text-white" href="javascript:void(0)" id="logout">Logout</a>
+                <!-- 수정된 프로필 영역 -->
+                <div class="mt-3 d-flex align-items-center">
+                    <img src="img/user_icon.png" alt="User Icon" class="user-profile-img">
+                    <p id="connected-user-username" class="ms-2 mb-0"></p>
+                    <a class="logout text-white ms-auto" href="javascript:void(0)" id="logout">Logout</a>
                 </div>
             </div>
             <!-- 채팅 영역 -->

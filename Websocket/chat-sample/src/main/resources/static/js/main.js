@@ -12,6 +12,7 @@ let stompClient = null;
 let email = null;
 let selectedRoomId = null;
 let accessToken = null;
+let auth = null;
 
 // 쿠키에서 특정 이름의 값을 가져오는 헬퍼 함수
 function getCookie(name) {
@@ -40,6 +41,8 @@ function login(event) {
                 accessToken = data.accessToken;
                 // accessToken을 cookie에 저장
                 document.cookie = "accessToken=" + accessToken + "; path=/";
+                // 추가: user 값을 cookie에 저장 (JSON 문자열 형태로)
+                document.cookie = "user=" + encodeURIComponent(JSON.stringify(data.user)) + "; path=/";
                 findAndDisplayChatRooms().then(r => console.log("Chat rooms loaded"));
                 initChat();
             })
@@ -54,8 +57,7 @@ function login(event) {
 
 // 채팅 초기화 및 STOMP 연결
 function initChat() {
-    usernamePage.classList.add('hidden');
-    chatPage.classList.remove('hidden');
+    showChatPage();
 
     const stompConfig = {
         // WebSocket Server URL
@@ -146,7 +148,6 @@ function onConnected() {
         {},
         JSON.stringify({username: email, status: 'ONLINE'})
     );
-    document.querySelector('#connected-user-username').textContent = email;
 }
 
 // 채팅방 목록 가져오기 (/rooms 엔드포인트)
@@ -277,11 +278,16 @@ function onLogout() {
 function showLoginPage() {
     document.getElementById("login-page").classList.remove("hidden");
     document.getElementById("chat-page").classList.add("hidden");
+
+    auth = null;
 }
 
 function showChatPage() {
     document.getElementById("login-page").classList.add("hidden");
     document.getElementById("chat-page").classList.remove("hidden");
+
+    auth = JSON.parse(decodeURIComponent(getCookie('user')))
+    document.querySelector('#connected-user-username').textContent = auth.name;
 }
 
 usernameForm.addEventListener('submit', login, true);
