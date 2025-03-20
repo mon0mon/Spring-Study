@@ -21,7 +21,7 @@ function getCookie(name) {
 }
 
 // 로그인 및 STOMP 연결
-function connect(event) {
+function login(event) {
     email = document.querySelector('#email').value.trim();
     const password = document.querySelector('#password').value.trim();
 
@@ -40,6 +40,7 @@ function connect(event) {
                 accessToken = data.accessToken;
                 // accessToken을 cookie에 저장
                 document.cookie = "accessToken=" + accessToken + "; path=/";
+                findAndDisplayChatRooms().then(r => console.log("Chat rooms loaded"));
                 initChat();
             })
             .catch(error => {
@@ -56,14 +57,81 @@ function initChat() {
     usernamePage.classList.add('hidden');
     chatPage.classList.remove('hidden');
 
-    const socket = new SockJS('/ws');
-    stompClient = Stomp.over(socket);
+    const stompConfig = {
+        // WebSocket Server URL
+        brokerURL: '/ws/stomp',
 
-    const headers = {};
-    if (accessToken) {
-        headers['Authorization'] = 'Bearer ' + accessToken;
+        // when connection dropped try to reconnect after 5000ms
+        reconnectDelay: 5000,
+        // client will listen to heartbeats from the server every 4000ms
+        heartbeatIncoming: 4000,
+        // client will send heartbeats every 4000ms
+        heartbeatOutgoing: 4000,
+
+        debug: function (str) {
+            console.log('STOMP: ' + str)
+        },
+
+        connectHeaders: {
+            Authorization: 'Bearer ' + accessToken
+        },
+
+        onConnect: function (frame) {
+            // Do something, all subscribes must be done is this callback
+            // This is needed because this will be executed after a (re)connect
+
+            console.log('Client connected: ' + frame);
+            setConnected(true);
+
+            stompClient.subscribe('/app/subscribe', function (response) {
+                log(response, 'table-success');
+
+                // acknowledge the message by sending the ACK frame
+                response.ack();
+            }, headers); // to enable client acknowledgment
+
+            stompClient.subscribe('/queue/responses', function (response) {
+                log(response, 'table-success');
+            });
+
+            stompClient.subscribe('/queue/errors', function (response) {
+                log(response, 'table-danger');
+
+                console.log('Client unsubscribes: subscription');
+                subscription.unsubscribe();
+            });
+
+            stompClient.subscribe('/topic/periodic', function (response) {
+                log(response, 'table-info');
+            });
+        },
+
+        onStompError: function (frame) {
+            // Will be invoked in case of error encountered at Broker
+            // Bad login/passcode typically will cause an error
+            // Complaint brokers will set `message` header with a brief message. Body may contain details.
+            // Compliant brokers will terminate the connection after any error
+            console.log('Broker reported error: ' + frame.headers['message']);
+            console.log('Additional details: ' + frame.body);
+            setConnected(false);
+        },
+
+        onDisconnect: function (frame) {
+            console.log('Client disconnected: ' + frame);
+            setConnected(false);
+        }
+
+        // SockJS 를 사용할 경우
+        // webSocketFactory: function () {
+        //     console.log('Using SockJS');
+        //     return new SockJS('http://localhost:8080/websocket-sockjs-stomp');
+        // }
     }
-    stompClient.connect(headers, onConnected, onError);
+
+    // stompjs 사용: webstomp.over -> Stomp.over
+    stompClient = new StompJs.Client(stompConfig);
+
+    stompClient.activate();
 }
 
 // STOMP 연결 성공 후 처리
@@ -79,18 +147,28 @@ function onConnected() {
         JSON.stringify({username: email, status: 'ONLINE'})
     );
     document.querySelector('#connected-user-username').textContent = email;
-    findAndDisplayChatRooms();
 }
 
 // 채팅방 목록 가져오기 (/rooms 엔드포인트)
 async function findAndDisplayChatRooms() {
     const headers = {};
     const token = getCookie("accessToken");
-    if(token) {
+    if (token) {
         headers['Authorization'] = 'Bearer ' + token;
     }
-    const response = await fetch('/rooms', {headers});
-    let chatRooms = await response.json();
+    const response = await fetch('/rooms', { headers });
+
+    // 403 응답인 경우, 쿠키에서 accessToken 삭제 후 로그인 화면 표시
+    if (response.status === 403) {
+        // 쿠키 삭제 (만료일을 과거로 설정)
+        document.cookie = "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+        // 로그인 페이지 보이기, 채팅 페이지 숨기기
+        showLoginPage();
+        return;
+    }
+
+    showChatPage();
+    const chatRooms = await response.json();
     const connectedUsersList = document.getElementById('connectedUsers');
     connectedUsersList.innerHTML = '';
 
@@ -196,7 +274,17 @@ function onLogout() {
     window.location.reload();
 }
 
-usernameForm.addEventListener('submit', connect, true);
+function showLoginPage() {
+    document.getElementById("login-page").classList.remove("hidden");
+    document.getElementById("chat-page").classList.add("hidden");
+}
+
+function showChatPage() {
+    document.getElementById("login-page").classList.add("hidden");
+    document.getElementById("chat-page").classList.remove("hidden");
+}
+
+usernameForm.addEventListener('submit', login, true);
 messageForm.addEventListener('submit', sendMessage, true);
 logout.addEventListener('click', onLogout, true);
 window.onbeforeunload = () => onLogout();
