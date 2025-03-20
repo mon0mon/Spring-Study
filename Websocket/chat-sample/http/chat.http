@@ -1,0 +1,7 @@
+### 신규 채팅방 개설
+POST {{host}}/chat
+Authorization: {{jwtToken}}
+
+### 현재 사용자의 채팅방 목록 조회
+GET {{host}}/rooms
+Authorization: {{jwtToken}}
