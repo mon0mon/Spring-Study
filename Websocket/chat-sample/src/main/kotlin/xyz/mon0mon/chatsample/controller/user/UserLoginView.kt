@@ -6,5 +6,6 @@ data class UserLoginViewReq(
 )
 
 data class UserLoginViewRes(
-    val accessToken: String
+    val accessToken: String,
+    val userId: Long
 )

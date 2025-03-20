@@ -12,9 +12,9 @@ class UserController(
 
     @PostMapping("/users/login")
     fun login(@RequestBody req: UserLoginViewReq): UserLoginViewRes {
-        val accessToken = userService.login(req.email, req.password)
+        val (accessToken, user) = userService.login(req.email, req.password)
 
-        return UserLoginViewRes(accessToken = accessToken)
+        return UserLoginViewRes(accessToken = accessToken, userId = user.id!!)
     }
 
     @PostMapping("/users")

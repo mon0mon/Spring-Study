@@ -17,14 +17,14 @@ class UserService(
     private val accessTokenService: AccessTokenService,
     private val passwordEncoder: PasswordEncoder
 ) {
-    fun login(email: String, password: String): String {
+    fun login(email: String, password: String): Pair<String, User> {
         val user = userRepository.findByEmail(email) ?: throw IllegalArgumentException("User not found")
 
         if (!passwordEncoder.matches(password, user.password)) {
             throw IllegalArgumentException("Password is incorrect")
         }
 
-        return accessTokenService.create(user.id!!)
+        return accessTokenService.create(user.id!!) to user
     }
 
     fun register(email: String, password: String, name: String) {

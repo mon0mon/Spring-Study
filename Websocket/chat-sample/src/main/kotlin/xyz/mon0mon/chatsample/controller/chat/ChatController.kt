@@ -6,11 +6,12 @@ import org.springframework.messaging.handler.annotation.DestinationVariable
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload
-import org.springframework.messaging.simp.annotation.SendToUser
 import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseBody
+import xyz.mon0mon.chatsample.domain.chat.ChatRoom
 import xyz.mon0mon.chatsample.security.DefaultSecurityContext
 import xyz.mon0mon.chatsample.security.jwt.JwtSecurityException
 import xyz.mon0mon.chatsample.service.chat.ChatMessageService
@@ -30,6 +31,14 @@ class ChatController(
         val userId = DefaultSecurityContext.userId()!!
 
         chatRoomService.createChatRoom(name = req.name, userId = userId)
+    }
+
+    @GetMapping("/rooms")
+    @ResponseBody
+    fun getRooms(): List<ChatRoom> {
+        val userId = DefaultSecurityContext.userId()!!
+
+        return chatRoomService.gets(userId = userId)
     }
 
     @MessageMapping("/chat/{roomId}.join")
