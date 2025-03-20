@@ -66,7 +66,6 @@ class ChatController(
     }
 
     @MessageExceptionHandler(JwtSecurityException::class)
-    @SendToUser("/queue/errors")
     fun handleJwtException(ex: JwtSecurityException): ErrorMessage {
         // 클라이언트가 이해할 수 있는 포맷의 에러 메시지 반환
         return ErrorMessage(status = ex.httpStatus.value(), message = ex.message)
