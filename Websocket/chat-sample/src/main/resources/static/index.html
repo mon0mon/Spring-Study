@@ -29,20 +29,33 @@
 
     <!-- 채팅 페이지 -->
     <div id="chat-page" class="hidden">
-        <div class="row">
+        <!-- 상단 행: WebSocket 연결 여부와 채팅방 목록 -->
+        <div class="row justify-content-center">
+            <!-- WebSocket 연결 여부 영역: 테두리 추가 -->
+            <div class="col-md-6 border p-3 mx-2">
+                <form class="form-inline">
+                    <div class="form-group">
+                        <label for="connect">STOMP connection:</label>
+                        <button id="connect" class="btn btn-light" type="submit">Connect</button>
+                        <button id="disconnect" class="btn btn-light" type="submit" disabled="disabled">Disconnect</button>
+                    </div>
+                </form>
+            </div>
             <!-- 채팅방 목록 -->
-            <div class="col-md-4 users-list bg-primary text-white p-3">
+            <div class="col-md-4 users-list bg-primary text-white p-3 mx-2">
                 <h2>Chat Rooms</h2>
                 <ul id="connectedUsers" class="list-unstyled"></ul>
-                <!-- 수정된 프로필 영역 -->
+                <!-- 프로필 영역 -->
                 <div class="mt-3 d-flex align-items-center">
                     <img src="img/user_icon.png" alt="User Icon" class="user-profile-img">
                     <p id="connected-user-username" class="ms-2 mb-0"></p>
                     <a class="logout text-white ms-auto" href="javascript:void(0)" id="logout">Logout</a>
                 </div>
             </div>
-            <!-- 채팅 영역 -->
-            <div class="col-md-8 chat-area p-3">
+        </div>
+        <!-- 하단 행: 채팅 영역 -->
+        <div class="row mt-3">
+            <div class="col-12 chat-area p-3">
                 <div id="chat-messages" class="mb-3" style="height:400px; overflow-y: auto;"></div>
                 <form id="messageForm" class="hidden">
                     <div class="input-group">
@@ -59,20 +72,13 @@
 <script src="js/main.js"></script>
 <script type="text/javascript" src="js/stomp.js"></script>
 <script type="text/javascript" src="js/bootstrap.bundle.min.js"></script>
-<!-- 페이지 로드시 쿠키의 accessToken 값 여부에 따라 화면 전환 -->
 <script>
     window.addEventListener("load", function() {
-        // main.js에 이미 getCookie 함수가 정의되어 있으므로 사용
         const token = getCookie("accessToken");
         if (token) {
-            // accessToken이 있으면 로그인 페이지 숨기고 채팅 페이지를 표시
-            showChatPage();
-            // 채팅방 목록을 가져오는 함수 호출 (main.js에 정의)
-            if (typeof findAndDisplayChatRooms === "function") {
-                findAndDisplayChatRooms();
-            }
+            findAndDisplayChatRooms();
+            initChat();
         } else {
-            // accessToken이 없으면 로그인 페이지 표시
             showLoginPage();
         }
     });

@@ -34,7 +34,7 @@ function login(event) {
             body: JSON.stringify({email: email, password: password})
         })
             .then(response => {
-                if(response.ok) return response.json();
+                if (response.ok) return response.json();
                 else throw new Error('Login failed');
             })
             .then(data => {
@@ -136,20 +136,6 @@ function initChat() {
     stompClient.activate();
 }
 
-// STOMP 연결 성공 후 처리
-function onConnected() {
-    // 유저 전용 채널 구독
-    stompClient.subscribe(`/user/${email}/queue/messages`, onMessageReceived);
-    // 공용 채널 구독 (필요시)
-    stompClient.subscribe(`/user/public`, onMessageReceived);
-
-    // 서버에 연결 유저 등록
-    stompClient.send("/app/user.addUser",
-        {},
-        JSON.stringify({username: email, status: 'ONLINE'})
-    );
-}
-
 // 채팅방 목록 가져오기 (/rooms 엔드포인트)
 async function findAndDisplayChatRooms() {
     const headers = {};
@@ -157,12 +143,11 @@ async function findAndDisplayChatRooms() {
     if (token) {
         headers['Authorization'] = 'Bearer ' + token;
     }
-    const response = await fetch('/rooms', { headers });
+    const response = await fetch('/rooms', {headers});
 
     // 403 응답인 경우, 쿠키에서 accessToken 삭제 후 로그인 화면 표시
     if (response.status === 403) {
-        // 쿠키 삭제 (만료일을 과거로 설정)
-        document.cookie = "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+        deleteCookie();
         // 로그인 페이지 보이기, 채팅 페이지 숨기기
         showLoginPage();
         return;
@@ -205,7 +190,7 @@ function roomItemClick(event) {
 async function fetchAndDisplayRoomChat() {
     const headers = {};
     const token = getCookie("accessToken");
-    if(token) {
+    if (token) {
         headers['Authorization'] = 'Bearer ' + token;
     }
     const response = await fetch(`/rooms/${selectedRoomId}/messages`, {headers});
@@ -261,17 +246,17 @@ function sendMessage(event) {
     event.preventDefault();
 }
 
-// STOMP 연결 에러 처리
-function onError() {
-    console.error('Could not connect to WebSocket server. Please refresh this page to try again!');
+function setConnected(connected) {
+    document.getElementById("connect").disabled = connected;
+    document.getElementById("disconnect").disabled = !connected;
+
+    document.getElementById('message').value = '';
 }
 
 // 로그아웃 처리
 function onLogout() {
-    stompClient.send("/app/user.disconnectUser",
-        {},
-        JSON.stringify({username: email, status: 'OFFLINE'})
-    );
+    // 쿠키 삭제 (만료일을 과거로 설정)
+    deleteCookie();
     window.location.reload();
 }
 
@@ -290,6 +275,11 @@ function showChatPage() {
 
     auth = JSON.parse(decodeURIComponent(getCookie('user')))
     document.querySelector('#connected-user-username').textContent = auth.name;
+}
+
+function deleteCookie() {
+    // 쿠키 삭제 (만료일을 과거로 설정)
+    document.cookie = "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; user=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
 }
 
 usernameForm.addEventListener('submit', login, true);
