@@ -1,10 +1,13 @@
 package xyz.mon0mon.chatsample.service.chat
 
+import xyz.mon0mon.chatsample.domain.user.User
 import java.time.OffsetDateTime
 
-data class ChatMessageDto(
+class ChatMessageDto(
     val chatRoomId: Long,
-    val sendUserId: Long,
     val message: String,
-    val timestamp: OffsetDateTime
-)
+    val timestamp: OffsetDateTime,
+    sendUser: User
+) {
+    val sender: String = sendUser.name
+}
