@@ -192,11 +192,11 @@ async function fetchAndDisplayRoomChat() {
     if (token) {
         headers['Authorization'] = 'Bearer ' + token;
     }
-    const response = await fetch(`/rooms/${selectedRoomId}/messages`, {headers});
+    const response = await fetch(`/chat/${selectedRoomId}/history`, {headers});
     const roomChat = await response.json();
     chatArea.innerHTML = '';
-    roomChat.forEach(chat => {
-        displayMessage(chat.sender, chat.content);
+    roomChat.content.forEach(chat => {
+        displayMessage(chat.sender, chat.message,  chat.timestamp);
     });
     chatArea.scrollTop = chatArea.scrollHeight;
 }
@@ -263,12 +263,9 @@ function sendMessage(event) {
     const messageContent = messageInput.value.trim();
     if (messageContent && stompClient && selectedRoomId) {
         const chatMessage = {
-            sender: auth.name,
-            roomId: selectedRoomId,
-            content: messageContent,
-            timestamp: new Date()
+            message: messageContent,
         };
-        stompClient.send("/app/chat", {}, JSON.stringify(chatMessage));
+        stompClient.send(`/app/chat/${selectedRoomId}`, {}, JSON.stringify(chatMessage));
         displayMessage(auth.name, messageContent);
         messageInput.value = '';
     }
