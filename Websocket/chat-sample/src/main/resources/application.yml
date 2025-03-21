@@ -26,6 +26,6 @@ security:
       secret-key: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       expire-length: 1800000 # 30분
 #      expire-length: 315576000000 # 10년
-logging:
-  level:
-    xyz.mon0mon.chatsample: debug
+#logging:
+#  level:
+#    xyz.mon0mon.chatsample: debug

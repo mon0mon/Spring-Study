@@ -5,3 +5,7 @@ Authorization: {{jwtToken}}
 ### 현재 사용자의 채팅방 목록 조회
 GET {{host}}/rooms
 Authorization: {{jwtToken}}
+
+### 채팅방의 채팅 기록을 조회
+GET {{host}}/chat/1/history
+Authorization: {{jwtToken}}

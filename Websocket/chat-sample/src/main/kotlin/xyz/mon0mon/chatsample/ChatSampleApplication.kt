@@ -7,9 +7,11 @@ import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.security.crypto.password.PasswordEncoder
+import xyz.mon0mon.chatsample.domain.chat.ChatMessage
 import xyz.mon0mon.chatsample.domain.chat.ChatRoom
 import xyz.mon0mon.chatsample.domain.chat.ChatRoomParticipant
 import xyz.mon0mon.chatsample.domain.user.User
+import xyz.mon0mon.chatsample.repository.chat.ChatMessageRepository
 import xyz.mon0mon.chatsample.repository.chat.ChatRoomParticipantRepository
 import xyz.mon0mon.chatsample.repository.chat.ChatRoomRepository
 import xyz.mon0mon.chatsample.repository.user.UserRepository
@@ -23,7 +25,8 @@ class ChatSampleApplication {
     @Bean
     fun init(
         userRepository: UserRepository, chatRoomRepository: ChatRoomRepository,
-        chatRoomParticipantRepository: ChatRoomParticipantRepository, passwordEncoder: PasswordEncoder
+        chatMessageRepository: ChatMessageRepository, chatRoomParticipantRepository: ChatRoomParticipantRepository,
+        passwordEncoder: PasswordEncoder
     ) =
         CommandLineRunner {
             try {
@@ -40,6 +43,21 @@ class ChatSampleApplication {
 
                 val chatRoom2Participant1 = chatRoomParticipantRepository.save(ChatRoomParticipant(chatRoom2, user1))
                 val chatRoom2Participant2 = chatRoomParticipantRepository.save(ChatRoomParticipant(chatRoom2, user2))
+
+                val chatMessage1 = chatMessageRepository.save(
+                    ChatMessage(sender = user1, content = "Hello, Java!", chatRoom = chatRoom1)
+                )
+                val chatMessage2 = chatMessageRepository.save(
+                    ChatMessage(sender = user2, content = "Hello, Kotlin!!", chatRoom = chatRoom1)
+                )
+
+                val chatMessage3 = chatMessageRepository.save(
+                    ChatMessage(sender = user1, content = "Hello, Java!", chatRoom = chatRoom2)
+                )
+                val chatMessage4 = chatMessageRepository.save(
+                    ChatMessage(sender = user2, content = "Hello, Kotlin!!", chatRoom = chatRoom2)
+                )
+
             } catch (e: Exception) {
                 logger.info { "Already exists" }
             } finally {

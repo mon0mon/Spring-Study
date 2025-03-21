@@ -1,20 +1,17 @@
 package xyz.mon0mon.chatsample.controller.chat
 
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.messaging.handler.annotation.*
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor
 import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.ResponseBody
+import org.springframework.web.bind.annotation.*
 import xyz.mon0mon.chatsample.domain.support.extension.findByIdOrThrow
 import xyz.mon0mon.chatsample.repository.user.UserRepository
 import xyz.mon0mon.chatsample.security.DefaultSecurityContext
 import xyz.mon0mon.chatsample.security.jwt.JwtSecurityException
-import xyz.mon0mon.chatsample.service.chat.ChatMessageService
-import xyz.mon0mon.chatsample.service.chat.ChatRoomParticipantService
-import xyz.mon0mon.chatsample.service.chat.ChatRoomService
-import xyz.mon0mon.chatsample.service.chat.MessageType
+import xyz.mon0mon.chatsample.service.chat.*
 
 @Controller
 class ChatController(
@@ -41,6 +38,17 @@ class ChatController(
         val participants = chatRoomParticipantService.getParticipants(chatRoomIds = chatRooms.mapNotNull { it.id })
 
         return ChatRoomsViewRes(chatRooms = chatRooms, participants = participants)
+    }
+
+    @GetMapping("/chat/{roomId}/history")
+    @ResponseBody
+    fun getChatMessages(
+        @PathVariable roomId: Long, @PageableDefault(size = 20, page = 0) pageable: Pageable
+    ): Page<ChatMessageDto> {
+        val userId = DefaultSecurityContext.userId()!!
+
+        // 채팅방(roomId)에 해당하는 메시지를 조회하는 서비스 호출
+        return chatMessageService.gets(userId = userId, chatRoomId = roomId, pageable = pageable)
     }
 
     /**
