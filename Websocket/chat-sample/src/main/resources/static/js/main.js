@@ -182,6 +182,8 @@ function roomItemClick(event) {
     const clickedRoom = event.currentTarget;
     clickedRoom.classList.add('active');
     selectedRoomId = clickedRoom.getAttribute('data-room-id');
+    // 현재 연결된 채팅방 이름 업데이트
+    document.getElementById('current-room').textContent = clickedRoom.textContent;
     messageForm.classList.remove('hidden');
     fetchAndDisplayRoomChat();
 }
