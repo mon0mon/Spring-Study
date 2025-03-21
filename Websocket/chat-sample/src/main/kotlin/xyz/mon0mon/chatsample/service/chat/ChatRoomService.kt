@@ -3,7 +3,9 @@ package xyz.mon0mon.chatsample.service.chat
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import xyz.mon0mon.chatsample.domain.chat.ChatRoom
+import xyz.mon0mon.chatsample.domain.chat.ChatRoomParticipant
 import xyz.mon0mon.chatsample.domain.support.extension.findByIdOrThrow
+import xyz.mon0mon.chatsample.repository.chat.ChatRoomParticipantRepository
 import xyz.mon0mon.chatsample.repository.chat.ChatRoomRepository
 import xyz.mon0mon.chatsample.repository.user.UserRepository
 
@@ -11,7 +13,8 @@ import xyz.mon0mon.chatsample.repository.user.UserRepository
 @Transactional
 class ChatRoomService(
     private val userRepository: UserRepository,
-    private val chatRoomRepository: ChatRoomRepository
+    private val chatRoomRepository: ChatRoomRepository,
+    private val chatRoomParticipantRepository: ChatRoomParticipantRepository
 ) {
 
     fun createChatRoom(name: String, userId: Long) {
@@ -27,20 +30,25 @@ class ChatRoomService(
 
     fun gets(userId: Long): List<ChatRoom> {
         val user = userRepository.findByIdOrThrow(userId)
-        return chatRoomRepository.findAllByParticipantsContaining(user)
+        val participantList = chatRoomParticipantRepository.findByUserId(user.id!!)
+        return participantList.map { it.chatRoom }
     }
 
     fun join(id: Long, userId: Long) {
         val user = userRepository.findByIdOrThrow(userId)
         val chatRoom = chatRoomRepository.findByIdOrThrow(id)
 
-        chatRoom.addUser(user)
+        val participant = ChatRoomParticipant(chatRoom = chatRoom, user = user)
+
+        chatRoomParticipantRepository.save(participant)
     }
 
     fun left(id: Long, userId: Long) {
         val user = userRepository.findByIdOrThrow(userId)
         val chatRoom = chatRoomRepository.findByIdOrThrow(id)
 
-        chatRoom.removeUser(user)
+        val participant = chatRoomParticipantRepository.findByUserIdAndChatRoomId(user.id!!, chatRoom.id!!)!!
+
+        chatRoomRepository.delete(chatRoom)
     }
 }

@@ -6,6 +6,4 @@ import xyz.mon0mon.chatsample.domain.user.User
 
 interface ChatRoomRepository: JpaRepository<ChatRoom, Long> {
     fun findByName(name: String): ChatRoom?
-
-    fun findAllByParticipantsContaining(user: User): MutableList<ChatRoom>
 }

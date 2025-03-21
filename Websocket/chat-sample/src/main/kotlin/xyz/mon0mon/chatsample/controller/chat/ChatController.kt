@@ -1,6 +1,5 @@
 package xyz.mon0mon.chatsample.controller.chat
 
-import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.messaging.handler.annotation.*
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor
 import org.springframework.stereotype.Controller
@@ -8,22 +7,21 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseBody
-import xyz.mon0mon.chatsample.domain.chat.ChatRoom
 import xyz.mon0mon.chatsample.domain.support.extension.findByIdOrThrow
 import xyz.mon0mon.chatsample.repository.user.UserRepository
 import xyz.mon0mon.chatsample.security.DefaultSecurityContext
 import xyz.mon0mon.chatsample.security.jwt.JwtSecurityException
 import xyz.mon0mon.chatsample.service.chat.ChatMessageService
+import xyz.mon0mon.chatsample.service.chat.ChatRoomParticipantService
 import xyz.mon0mon.chatsample.service.chat.ChatRoomService
 import xyz.mon0mon.chatsample.service.chat.MessageType
-
-private val logger = KotlinLogging.logger { }
 
 @Controller
 class ChatController(
     private val chatRoomService: ChatRoomService,
     private val chatMessageService: ChatMessageService,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val chatRoomParticipantService: ChatRoomParticipantService
 ) {
 
     @PostMapping("/chat")
@@ -36,10 +34,13 @@ class ChatController(
 
     @GetMapping("/rooms")
     @ResponseBody
-    fun getRooms(): List<ChatRoom> {
+    fun getRooms(): ChatRoomsViewRes {
         val userId = DefaultSecurityContext.userId()!!
 
-        return chatRoomService.gets(userId = userId)
+        val chatRooms = chatRoomService.gets(userId = userId)
+        val participants = chatRoomParticipantService.getParticipants(chatRoomIds = chatRooms.mapNotNull { it.id })
+
+        return ChatRoomsViewRes(chatRooms = chatRooms, participants = participants)
     }
 
     /**

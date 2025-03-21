@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional
 import xyz.mon0mon.chatsample.domain.chat.ChatMessage
 import xyz.mon0mon.chatsample.domain.support.extension.findByIdOrThrow
 import xyz.mon0mon.chatsample.repository.chat.ChatMessageRepository
+import xyz.mon0mon.chatsample.repository.chat.ChatRoomParticipantRepository
 import xyz.mon0mon.chatsample.repository.chat.ChatRoomRepository
 import xyz.mon0mon.chatsample.repository.user.UserRepository
 import java.time.OffsetDateTime
@@ -18,7 +19,8 @@ class ChatMessageService(
     private val userRepository: UserRepository,
     private val chatMessageRepository: ChatMessageRepository,
     private val chatRoomRepository: ChatRoomRepository,
-    private val chatRoomService: ChatRoomService
+    private val chatRoomService: ChatRoomService,
+    private val chatRoomParticipantRepository: ChatRoomParticipantRepository
 ) {
 
     fun processMessage(userId: Long, roomId: Long, type: MessageType, content: String? = null, size: Int = 0, page: Int = 0): Any {
@@ -42,8 +44,8 @@ class ChatMessageService(
         val user = userRepository.findByIdOrThrow(userId)
         val chatRoom = chatRoomRepository.findByIdOrThrow(chatRoomId)
 
-        if (chatRoom.isParticipant(user).not())
-            throw IllegalArgumentException("User is not a participant of the chat room")
+        val participant = chatRoomParticipantRepository.findByUserIdAndChatRoomId(user.id!!, chatRoom.id!!)!!
+            ?: throw IllegalArgumentException("User is not a participant of the chat room")
 
         val chatMessage = ChatMessage(chatRoom = chatRoom, sender = user, content = message)
         chatMessageRepository.save(chatMessage)
@@ -58,8 +60,8 @@ class ChatMessageService(
         val user = userRepository.findByIdOrThrow(userId)
         val chatRoom = chatRoomRepository.findByIdOrThrow(chatRoomId)
 
-        if (chatRoom.isParticipant(user).not())
-            throw IllegalArgumentException("User is not a participant of the chat room")
+        val participant = chatRoomParticipantRepository.findByUserIdAndChatRoomId(user.id!!, chatRoom.id!!)!!
+            ?: throw IllegalArgumentException("User is not a participant of the chat room")
 
         val chatMessages = chatMessageRepository.findAllByChatRoom(chatRoom, pageable)
 
