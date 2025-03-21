@@ -12,6 +12,7 @@ let stompClient = null;
 let selectedRoomId = null;
 let accessToken = null;
 let auth = null;
+let chatRooms = [];
 
 // 쿠키에서 특정 이름의 값을 가져오는 헬퍼 함수
 function getCookie(name) {
@@ -42,8 +43,10 @@ function login(event) {
                 document.cookie = "accessToken=" + accessToken + "; path=/";
                 // 추가: user 값을 cookie에 저장 (JSON 문자열 형태로)
                 document.cookie = "user=" + encodeURIComponent(JSON.stringify(data.user)) + "; path=/";
-                findAndDisplayChatRooms().then(r => console.log("Chat rooms loaded"));
-                initChat();
+                findAndDisplayChatRooms().then(() => {
+                    console.log("Chat rooms loaded");
+                    initChat();
+                });
             })
             .catch(error => {
                 console.error('Login error:', error);
@@ -87,8 +90,17 @@ function initChat() {
             stompClient.subscribe('/topic/periodic', function (response) {
                 const data = JSON.parse(response.body);
                 console.log(`periodic message : ${response.body}`);
-                displayMessage('System', data.message);
+                // displayMessage('System', data.message);
             });
+
+            console.log(chatRooms)
+            chatRooms.forEach(
+                room => {
+                    stompClient.subscribe(`/topic/chat/${room.id}`, function (response) {
+                        onMessageReceived(response);
+                    });
+                }
+            );
         },
 
         onStompError: function (frame) {
@@ -137,7 +149,11 @@ async function findAndDisplayChatRooms() {
     }
 
     showChatPage();
-    const chatRooms = await response.json();
+
+    // 응답 JSON이 { chatRooms: [...] } 형태이므로 chatRooms 프로퍼티를 추출합니다.
+    const data = await response.json();
+    chatRooms = data.chatRooms;
+
     const connectedUsersList = document.getElementById('connectedUsers');
     connectedUsersList.innerHTML = '';
 
@@ -271,6 +287,7 @@ function setConnected(connected) {
 function onLogout() {
     // 쿠키 삭제 (만료일을 과거로 설정)
     deleteCookie();
+    clearData();
     window.location.reload();
 }
 
@@ -294,6 +311,12 @@ function showChatPage() {
 function deleteCookie() {
     // 쿠키 삭제 (만료일을 과거로 설정)
     document.cookie = "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; user=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+}
+
+function clearData() {
+    chatRooms = [];
+    selectedRoomId = null;
+    chatArea.innerHTML = '';
 }
 
 usernameForm.addEventListener('submit', login, true);
