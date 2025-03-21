@@ -12,7 +12,7 @@ class ChatMessagesViewRes (
     val pageSize: Int = page.size
     val first: Boolean = page.isFirst
     val last: Boolean = page.isLast
-    val content: List<ChatMessageData> = page.content.map { ChatMessageData(it) }
+    val messages: List<ChatMessageData> = page.content.map { ChatMessageData(it) }
 }
 
 class ChatMessageData (
@@ -21,6 +21,6 @@ class ChatMessageData (
     val id: Long = dto.id
     val chatRoomId: Long = dto.chatRoomId
     val sender: String = dto.sender
-    val message: String = dto.message
+    val content: String = dto.content
     val timestamp: String = dto.timestamp.toString()
 }

@@ -8,7 +8,7 @@ class ChatMessageDto(
 ) {
     val id: Long = chatMessage.id!!
     val chatRoomId: Long = chatMessage.chatRoom.id!!
-    val message: String = chatMessage.content
+    val content: String = chatMessage.content
     val timestamp: OffsetDateTime = chatMessage.createdAt
     val sender: String = chatMessage.sender.name
 }

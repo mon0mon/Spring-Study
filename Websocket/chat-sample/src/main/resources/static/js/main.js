@@ -95,7 +95,6 @@ function initChat() {
                 // displayMessage('System', data.message);
             });
 
-            console.log(chatRooms)
             chatRooms.forEach(
                 room => {
                     stompClient.subscribe(`/topic/chat/${room.id}`, function (response) {
@@ -197,8 +196,8 @@ async function fetchAndDisplayRoomChat() {
     const response = await fetch(`/chat/${selectedRoomId}/history`, {headers});
     const roomChat = await response.json();
     chatArea.innerHTML = '';
-    roomChat.content.forEach(chat => {
-        displayMessage(chat.sender, chat.message, chat.timestamp);
+    roomChat.messages.forEach(chat => {
+        displayMessage(chat.sender, chat.content, chat.timestamp);
     });
     chatArea.scrollTop = chatArea.scrollHeight;
 }
@@ -254,7 +253,7 @@ function onMessageReceived(payload) {
     console.log('Message received', payload);
     const message = JSON.parse(payload.body);
     // 현재 선택된 채팅방의 메시지라면 표시
-    if (selectedRoomId && message.roomId === selectedRoomId) {
+    if (selectedRoomId && message.chatRoomId == selectedRoomId) {
         displayMessage(message.sender, message.content);
         chatArea.scrollTop = chatArea.scrollHeight;
     }
@@ -282,7 +281,6 @@ function sendMessage(event) {
         tx.commit();
 
         messageInput.value = '';
-        displayMessage(auth.name, messageContent);
     }
     chatArea.scrollTop = chatArea.scrollHeight;
     event.preventDefault();

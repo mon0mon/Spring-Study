@@ -46,11 +46,13 @@ class ChatController(
     @ResponseBody
     fun getChatMessages(
         @PathVariable roomId: Long, @PageableDefault(size = 20, page = 0) pageable: Pageable
-    ): Page<ChatMessageDto> {
+    ): ChatMessagesViewRes {
         val userId = DefaultSecurityContext.userId()!!
 
         // 채팅방(roomId)에 해당하는 메시지를 조회하는 서비스 호출
-        return chatMessageService.gets(userId = userId, chatRoomId = roomId, pageable = pageable)
+        val page = chatMessageService.gets(userId = userId, chatRoomId = roomId, pageable = pageable)
+
+        return ChatMessagesViewRes(page = page)
     }
 
     /**
