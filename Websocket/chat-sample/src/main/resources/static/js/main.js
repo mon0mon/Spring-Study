@@ -9,7 +9,6 @@ const chatArea = document.querySelector('#chat-messages');
 const logout = document.querySelector('#logout');
 
 let stompClient = null;
-let email = null;
 let selectedRoomId = null;
 let accessToken = null;
 let auth = null;
@@ -23,7 +22,7 @@ function getCookie(name) {
 
 // 로그인 및 STOMP 연결
 function login(event) {
-    email = document.querySelector('#email').value.trim();
+    const email = document.querySelector('#email').value.trim();
     const password = document.querySelector('#password').value.trim();
 
     if (email && password) {
@@ -85,26 +84,10 @@ function initChat() {
             console.log('Client connected: ' + frame);
             setConnected(true);
 
-            stompClient.subscribe('/app/subscribe', function (response) {
-                log(response, 'table-success');
-
-                // acknowledge the message by sending the ACK frame
-                response.ack();
-            }, headers); // to enable client acknowledgment
-
-            stompClient.subscribe('/queue/responses', function (response) {
-                log(response, 'table-success');
-            });
-
-            stompClient.subscribe('/queue/errors', function (response) {
-                log(response, 'table-danger');
-
-                console.log('Client unsubscribes: subscription');
-                subscription.unsubscribe();
-            });
-
             stompClient.subscribe('/topic/periodic', function (response) {
-                log(response, 'table-info');
+                const data = JSON.parse(response.body);
+                console.log(`periodic message : ${response.body}`);
+                displayMessage('System', data.message);
             });
         },
 
@@ -203,18 +186,49 @@ async function fetchAndDisplayRoomChat() {
 }
 
 // 채팅 메시지 DOM 추가
-function displayMessage(sender, content) {
+function displayMessage(sender, content, timestamp) {
     const messageContainer = document.createElement('div');
     messageContainer.classList.add('message');
-    if (sender === email) {
+
+    // 현재 사용자인지 여부에 따라 스타일 지정
+    if (sender === auth.name) {
         messageContainer.classList.add('sender');
     } else {
         messageContainer.classList.add('receiver');
     }
-    const messageText = document.createElement('p');
-    messageText.textContent = content;
-    messageContainer.appendChild(messageText);
+
+    // 발신자 요소 (예: 상단에 표시)
+    const senderElement = document.createElement('span');
+    senderElement.classList.add('message-sender');
+    senderElement.textContent = sender;
+
+    // 메시지 내용 요소
+    const contentElement = document.createElement('p');
+    contentElement.classList.add('message-content');
+    contentElement.textContent = content;
+
+    // 채팅 시간 요소 (timestamp가 있으면 파싱, 없으면 현재 시간 사용)
+    const timeElement = document.createElement('span');
+    timeElement.classList.add('message-timestamp');
+    const time = timestamp ? new Date(timestamp) : new Date();
+    // 원하는 포맷으로 시간 표시 (여기서는 간단히 toLocaleTimeString() 사용)
+    timeElement.textContent = time.toLocaleTimeString();
+
+    // 메시지 컨테이너에 발신자, 내용, 시간 순서로 추가
+    messageContainer.appendChild(senderElement);
+    messageContainer.appendChild(contentElement);
+    messageContainer.appendChild(timeElement);
+
+    const threshold = 10; // 10px 이내면 최하단으로 간주
+    const isAtBottom = chatArea.scrollTop >= (chatArea.scrollHeight - chatArea.clientHeight - threshold);
+
     chatArea.appendChild(messageContainer);
+    // 자동 스크롤 조건 확인
+    const isOverflowing = chatArea.scrollHeight > chatArea.clientHeight;
+
+    if (isOverflowing && (chatArea.scrollTop === 0 || isAtBottom)) {
+        chatArea.scrollTop = chatArea.scrollHeight;
+    }
 }
 
 // STOMP 메시지 수신 처리
@@ -233,13 +247,13 @@ function sendMessage(event) {
     const messageContent = messageInput.value.trim();
     if (messageContent && stompClient && selectedRoomId) {
         const chatMessage = {
-            sender: email,
+            sender: auth.name,
             roomId: selectedRoomId,
             content: messageContent,
             timestamp: new Date()
         };
         stompClient.send("/app/chat", {}, JSON.stringify(chatMessage));
-        displayMessage(email, messageContent);
+        displayMessage(auth.name, messageContent);
         messageInput.value = '';
     }
     chatArea.scrollTop = chatArea.scrollHeight;
