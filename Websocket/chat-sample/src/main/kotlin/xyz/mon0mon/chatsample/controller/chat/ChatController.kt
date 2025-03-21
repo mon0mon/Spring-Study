@@ -7,11 +7,13 @@ import org.springframework.messaging.handler.annotation.*
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
-import xyz.mon0mon.chatsample.domain.support.extension.findByIdOrThrow
 import xyz.mon0mon.chatsample.repository.user.UserRepository
 import xyz.mon0mon.chatsample.security.DefaultSecurityContext
 import xyz.mon0mon.chatsample.security.jwt.JwtSecurityException
-import xyz.mon0mon.chatsample.service.chat.*
+import xyz.mon0mon.chatsample.service.chat.ChatMessageDto
+import xyz.mon0mon.chatsample.service.chat.ChatMessageService
+import xyz.mon0mon.chatsample.service.chat.ChatRoomParticipantService
+import xyz.mon0mon.chatsample.service.chat.ChatRoomService
 
 @Controller
 class ChatController(
@@ -62,14 +64,11 @@ class ChatController(
         @Payload reqPayload: ReqPayload,
         headerAccessor: SimpMessageHeaderAccessor
     ): Any {
-        val userId = DefaultSecurityContext.userId()!!
-        val user = userRepository.findByIdOrThrow(userId)
+        val principal = headerAccessor.user
+            ?: throw IllegalArgumentException("No authenticated user found in header")
+        val userId = principal.name.toLong() // 만약 userId를 getName()에 저장했다면
 
-        // 메시지 내 native header "Type" 값을 읽어 어떤 작업을 할지 결정
-        val type = MessageType.from(
-            headerAccessor.getFirstNativeHeader("Type") ?: throw IllegalArgumentException("Type header is required"))
-
-        return chatMessageService.processMessage(userId, roomId, type, reqPayload.content)
+        return chatMessageService.processMessage(userId, roomId, reqPayload.type, reqPayload.content)
     }
 
     @MessageExceptionHandler(JwtSecurityException::class)

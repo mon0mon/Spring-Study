@@ -61,6 +61,10 @@ function login(event) {
 function initChat() {
     showChatPage();
 
+    const headers = {
+        Authorization: 'Bearer ' + accessToken
+    };
+
     const stompConfig = {
         // WebSocket Server URL
         brokerURL: '/ws/stomp',
@@ -76,9 +80,7 @@ function initChat() {
             console.log('STOMP: ' + str)
         },
 
-        connectHeaders: {
-            Authorization: 'Bearer ' + accessToken
-        },
+        connectHeaders: headers,
 
         onConnect: function (frame) {
             // Do something, all subscribes must be done is this callback
@@ -196,7 +198,7 @@ async function fetchAndDisplayRoomChat() {
     const roomChat = await response.json();
     chatArea.innerHTML = '';
     roomChat.content.forEach(chat => {
-        displayMessage(chat.sender, chat.message,  chat.timestamp);
+        displayMessage(chat.sender, chat.message, chat.timestamp);
     });
     chatArea.scrollTop = chatArea.scrollHeight;
 }
@@ -263,11 +265,24 @@ function sendMessage(event) {
     const messageContent = messageInput.value.trim();
     if (messageContent && stompClient && selectedRoomId) {
         const chatMessage = {
-            message: messageContent,
+            type: "SEND",
+            content: messageContent,
         };
-        stompClient.send(`/app/chat/${selectedRoomId}`, {}, JSON.stringify(chatMessage));
-        displayMessage(auth.name, messageContent);
+
+        // sent message with acknowledge with a transaction
+        // https://stomp-js.github.io/guide/stompjs/using-stompjs-v5.html#transactions
+        const tx = stompClient.begin();
+        stompClient.publish(
+            {
+                destination: `/app/chat/${selectedRoomId}`,
+                headers: {transaction: tx.id, 'Authorization' : 'Bearer ' + accessToken},
+                body: JSON.stringify(chatMessage)
+            }
+        );
+        tx.commit();
+
         messageInput.value = '';
+        displayMessage(auth.name, messageContent);
     }
     chatArea.scrollTop = chatArea.scrollHeight;
     event.preventDefault();

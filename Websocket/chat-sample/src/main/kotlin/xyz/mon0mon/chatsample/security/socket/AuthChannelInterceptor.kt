@@ -25,9 +25,9 @@ class AuthChannelInterceptor(
         logger.debug { "WebSocket Interceptor" }
 
         val accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor::class.java)
-        if (accessor?.command == StompCommand.CONNECT) {
+        if (accessor?.command == StompCommand.CONNECT || accessor?.command == StompCommand.SEND) {
             try {
-                val token = accessor.getFirstNativeHeader("Authorization")
+               val token = accessor.getFirstNativeHeader("Authorization")
                     ?: throw JwtSecurityException("Authorization header is missing", HttpStatus.UNAUTHORIZED)
 
                 if (!token.startsWith("Bearer ")) {
