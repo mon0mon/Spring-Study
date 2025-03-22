@@ -1,0 +1,5 @@
+Expired Token
+- {"Authorization":"Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzQyMzUxMzQxLCJleHAiOjE3NDIzNTMxNDF9.TRsa-e4I9qqer_8yVOfKx-ae0s7CTa0X4sFiQVjav18"}
+
+Permanent Token
+- {"Authorization":"Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzQyMzU0NDU5LCJleHAiOjIwNTc5MzA0NTl9.6HJ4cJaIC9VnZPeCNajuxrhuZGtirPDXnlNJoxMHtsM"}

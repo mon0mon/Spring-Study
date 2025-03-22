@@ -1,0 +1,44 @@
+### Login User1
+POST {{host}}/users/login
+Content-Type: application/json
+
+{
+  "email": "{{user1.email}}",
+  "password": "{{user1.password}}"
+}
+
+> {%
+    if (response.body && response.body != "") {
+        client.log("accessToken : " + response.body.accessToken);
+        client.global.set("jwtToken", "Bearer " + response.body.accessToken)
+        client.global.set("accessToken", response.body.accessToken);
+    }
+%}
+
+### Login User2
+POST {{host}}/users/login
+Content-Type: application/json
+
+{
+  "email": "{{user2.email}}",
+  "password": "{{user2.password}}"
+}
+
+> {%
+    if (response.body && response.body != "") {
+        client.log("accessToken : " + response.body.accessToken);
+        client.global.set("jwtToken", "Bearer " + response.body.accessToken)
+        client.global.set("accessToken", response.body.accessToken);
+    }
+%}
+
+
+### Register User
+POST {{host}}/users
+Content-Type: application/json
+
+{
+  "email": "{{register.email}}",
+  "name": "test",
+  "password": "{{register.password}}"
+}

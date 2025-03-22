@@ -1,0 +1,12 @@
+### 채팅 WS 연결
+WEBSOCKET {{ws_host}}/ws/chat
+Authorization: {{jwtToken}}
+
+### Periodic WS 연결
+WEBSOCKET {{ws_host}}/ws/periodic
+Authorization: {{jwtToken}}
+
+### Periodic WS 연결
+WEBSOCKET {{ws_host}}/websocket
+Authorization: {{jwtToken}}
+
