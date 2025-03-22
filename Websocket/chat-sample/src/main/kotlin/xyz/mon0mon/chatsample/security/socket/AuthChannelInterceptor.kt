@@ -1,6 +1,7 @@
 package xyz.mon0mon.chatsample.security.socket
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.http.HttpStatus
 import org.springframework.messaging.Message
 import org.springframework.messaging.MessageChannel
@@ -9,14 +10,17 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor
 import org.springframework.messaging.support.ChannelInterceptor
 import org.springframework.messaging.support.MessageHeaderAccessor
 import org.springframework.stereotype.Component
+import xyz.mon0mon.chatsample.event.WebSocketCloseEvent
 import xyz.mon0mon.chatsample.security.jwt.JwtSecurityException
 import xyz.mon0mon.chatsample.security.jwt.JwtTokenProvider
+import java.time.Instant
 
 private val logger = KotlinLogging.logger { }
 
 @Component
 class AuthChannelInterceptor(
-    private val jwtTokenProvider: JwtTokenProvider
+    private val jwtTokenProvider: JwtTokenProvider,
+    private val eventPublisher: ApplicationEventPublisher
 ) : ChannelInterceptor {
 
     override fun preSend(message: Message<*>, channel: MessageChannel): Message<*>? {
@@ -37,6 +41,12 @@ class AuthChannelInterceptor(
             if (!jwtTokenProvider.validateToken(jwt)) {
                 throw JwtSecurityException("Expired or invalid JWT token", HttpStatus.UNAUTHORIZED)
             }
+
+            // JWT 토큰의 만료 시간을 Instant 형태로 추출 (jwtTokenProvider에 getExpiration 메서드가 있다고 가정)
+            val expirationTime: Instant = jwtTokenProvider.getExpiration(jwt)
+            eventPublisher.publishEvent(
+                WebSocketCloseEvent(sessionId = accessor.sessionId!!, expireTime = expirationTime)
+            )
 
             val authentication = jwtTokenProvider.getAuthentication(jwt)
             accessor.user = authentication
