@@ -3,7 +3,7 @@ package xyz.mon0mon.chatwebsocket.controller.chat
 import xyz.mon0mon.chatwebsocket.domain.chat.ChatRoom
 import xyz.mon0mon.chatwebsocket.domain.chat.ChatRoomParticipant
 
-class ChatRoomsViewRes (
+class ChatRoomsViewRes(
     chatRooms: List<ChatRoom>,
     participants: Map<Long, List<ChatRoomParticipant>>
 ) {
@@ -11,7 +11,8 @@ class ChatRoomsViewRes (
 }
 
 class ChatRoomData(
-    chatRoom: ChatRoom, participants: List<ChatRoomParticipant>
+    chatRoom: ChatRoom,
+    participants: List<ChatRoomParticipant>
 ) {
     val id = chatRoom.id
     val name = chatRoom.name

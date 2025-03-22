@@ -21,10 +21,11 @@ class ChatController(
     private val userRepository: UserRepository,
     private val chatRoomParticipantService: ChatRoomParticipantService
 ) {
-
     @PostMapping("/chat")
     @ResponseBody
-    fun createRoom(@RequestBody req: ChatRoomCreateViewReq) {
+    fun createRoom(
+        @RequestBody req: ChatRoomCreateViewReq
+    ) {
         val userId = DefaultSecurityContext.userId()!!
 
         chatRoomService.createChatRoom(name = req.name, userId = userId)
@@ -44,7 +45,8 @@ class ChatController(
     @GetMapping("/chat/{roomId}/history")
     @ResponseBody
     fun getChatMessages(
-        @PathVariable roomId: Long, @PageableDefault(size = 20, page = 0) pageable: Pageable
+        @PathVariable roomId: Long,
+        @PageableDefault(size = 20, page = 0) pageable: Pageable
     ): ChatMessagesViewRes {
         val userId = DefaultSecurityContext.userId()!!
 

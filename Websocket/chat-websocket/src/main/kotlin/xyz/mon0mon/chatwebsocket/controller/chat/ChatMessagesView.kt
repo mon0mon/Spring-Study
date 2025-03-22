@@ -3,7 +3,7 @@ package xyz.mon0mon.chatwebsocket.controller.chat
 import org.springframework.data.domain.Page
 import xyz.mon0mon.chatwebsocket.service.chat.ChatMessageDto
 
-class ChatMessagesViewRes (
+class ChatMessagesViewRes(
     page: Page<ChatMessageDto>
 ) {
     val totalElements: Long = page.totalElements
@@ -15,7 +15,7 @@ class ChatMessagesViewRes (
     val messages: List<ChatMessageData> = page.content.map { ChatMessageData(it) }
 }
 
-class ChatMessageData (
+class ChatMessageData(
     dto: ChatMessageDto
 ) {
     val id: Long = dto.id
