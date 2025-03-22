@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Component
 import xyz.mon0mon.chatsample.domain.support.extension.findByIdOrThrow
 import xyz.mon0mon.chatsample.repository.user.UserRepository
+import java.time.Instant
 import java.util.*
 
 @Component
@@ -28,6 +29,16 @@ class JwtTokenProvider(
         val principal = DefaultUserDetails(userId, user.role)
 
         return UsernamePasswordAuthenticationToken(principal, "", principal.authorities)
+    }
+
+    fun getExpiration(token: String): Instant {
+        val claims = Jwts.parserBuilder()
+            .setSigningKey(secretKey)
+            .build()
+            .parseClaimsJws(token)
+            .body
+
+        return claims.expiration.toInstant()
     }
 
     fun validateToken(token: String): Boolean {

@@ -6,12 +6,13 @@ import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
 import io.jsonwebtoken.security.SignatureException
-import xyz.mon0mon.chatsample.security.AccessTokenService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import xyz.mon0mon.chatsample.domain.support.extension.findByIdOrThrow
 import xyz.mon0mon.chatsample.repository.user.UserRepository
+import xyz.mon0mon.chatsample.security.AccessTokenService
+import java.time.Instant
 import java.util.*
 
 @Service
@@ -36,7 +37,7 @@ class JwtTokenService(
         val user = userRepository.findByIdOrThrow(userId)
 
         val now = Date()
-        val validity = Date(now.time + expireLength)
+        val validity = Date(Instant.now().plusSeconds(expireLength).toEpochMilli())
 
         val keyBytes = Decoders.BASE64.decode(secretKey)
         val key = Keys.hmacShaKeyFor(keyBytes)
