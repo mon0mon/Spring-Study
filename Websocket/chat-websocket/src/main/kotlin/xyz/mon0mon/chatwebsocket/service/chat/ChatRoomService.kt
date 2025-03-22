@@ -39,24 +39,28 @@ class ChatRoomService(
     fun join(
         id: Long,
         userId: Long
-    ) {
+    ): ChatMessageResponseDto {
         val user = userRepository.findByIdOrThrow(userId)
         val chatRoom = chatRoomRepository.findByIdOrThrow(id)
 
         val participant = ChatRoomParticipant(chatRoom = chatRoom, user = user)
 
         chatRoomParticipantRepository.save(participant)
+
+        return ChatMessageResponseDto(success = true)
     }
 
     fun left(
         id: Long,
         userId: Long
-    ) {
+    ): ChatMessageResponseDto {
         val user = userRepository.findByIdOrThrow(userId)
         val chatRoom = chatRoomRepository.findByIdOrThrow(id)
 
         val participant = chatRoomParticipantRepository.findByUserIdAndChatRoomId(user.id!!, chatRoom.id!!)!!
 
         chatRoomRepository.delete(chatRoom)
+
+        return ChatMessageResponseDto(success = true)
     }
 }

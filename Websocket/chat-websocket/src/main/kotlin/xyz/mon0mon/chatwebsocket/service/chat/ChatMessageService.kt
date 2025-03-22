@@ -17,35 +17,14 @@ class ChatMessageService(
     private val userRepository: UserRepository,
     private val chatMessageRepository: ChatMessageRepository,
     private val chatRoomRepository: ChatRoomRepository,
-    private val chatRoomService: ChatRoomService,
     private val chatRoomParticipantRepository: ChatRoomParticipantRepository
 ) {
-    fun processMessage(
-        userId: Long,
-        roomId: Long,
-        type: MessageType,
-        content: String? = null,
-        size: Int = 0,
-        page: Int = 0
-    ): Any {
-        return when (type) {
-            MessageType.SEND -> {
-                createMessage(userId, roomId, content!!)
-            }
-            MessageType.JOIN -> {
-                chatRoomService.join(userId, roomId)
-            }
-            MessageType.LEAVE -> {
-                chatRoomService.left(userId, roomId)
-            }
-        }
-    }
-
     fun createMessage(
         userId: Long,
         chatRoomId: Long,
-        message: String
-    ): ChatMessageDto {
+        content: String,
+        messageType: MessageType
+    ): ChatMessageResponseDto {
         val user = userRepository.findByIdOrThrow(userId)
         val chatRoom = chatRoomRepository.findByIdOrThrow(chatRoomId)
 
@@ -53,11 +32,11 @@ class ChatMessageService(
             chatRoomParticipantRepository.findByUserIdAndChatRoomId(user.id!!, chatRoom.id!!)!!
                 ?: throw IllegalArgumentException("User is not a participant of the chat room")
 
-        val chatMessage = ChatMessage(chatRoom = chatRoom, sender = user, content = message)
+        val chatMessage = ChatMessage(chatRoom = chatRoom, sender = user, content = content)
         chatMessageRepository.save(chatMessage)
 
         // 예시: 메시지를 ChatMessageDto로 변환
-        return ChatMessageDto(chatMessage)
+        return ChatMessageResponseDto(success = true, content = ChatMessageDto(chatMessage), timestamp = chatMessage.createdAt)
     }
 
     fun gets(
