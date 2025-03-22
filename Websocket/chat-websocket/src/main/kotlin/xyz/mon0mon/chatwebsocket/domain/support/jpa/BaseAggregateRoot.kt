@@ -4,7 +4,7 @@ import jakarta.persistence.MappedSuperclass
 import org.springframework.data.domain.AfterDomainEventPublication
 import org.springframework.data.domain.DomainEvents
 import org.springframework.util.Assert
-import java.util.*
+import java.util.Collections
 import kotlin.collections.ArrayList
 
 @MappedSuperclass

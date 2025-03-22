@@ -9,7 +9,7 @@ import xyz.mon0mon.chatwebsocket.domain.support.extension.findByIdOrThrow
 import xyz.mon0mon.chatwebsocket.repository.user.UserRepository
 import xyz.mon0mon.chatwebsocket.security.AccessTokenService
 import xyz.mon0mon.chatwebsocket.security.DefaultUserDetails
-import java.util.*
+import java.util.Date
 
 @Component
 class JwtTokenProvider(

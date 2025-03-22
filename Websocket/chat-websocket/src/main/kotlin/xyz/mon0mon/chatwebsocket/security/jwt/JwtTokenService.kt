@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service
 import xyz.mon0mon.chatwebsocket.domain.support.extension.findByIdOrThrow
 import xyz.mon0mon.chatwebsocket.repository.user.UserRepository
 import xyz.mon0mon.chatwebsocket.security.AccessTokenService
-import java.util.*
+import java.util.Date
 
 @Service
 class JwtTokenService(
