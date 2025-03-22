@@ -1,16 +1,20 @@
 package xyz.mon0mon.chatsample.controller.chat
 
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
-import org.springframework.messaging.handler.annotation.*
+import org.springframework.messaging.handler.annotation.DestinationVariable
+import org.springframework.messaging.handler.annotation.MessageMapping
+import org.springframework.messaging.handler.annotation.Payload
+import org.springframework.messaging.handler.annotation.SendTo
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor
 import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.ResponseBody
 import xyz.mon0mon.chatsample.repository.user.UserRepository
 import xyz.mon0mon.chatsample.security.DefaultSecurityContext
-import xyz.mon0mon.chatsample.security.jwt.JwtSecurityException
-import xyz.mon0mon.chatsample.service.chat.ChatMessageDto
 import xyz.mon0mon.chatsample.service.chat.ChatMessageService
 import xyz.mon0mon.chatsample.service.chat.ChatRoomParticipantService
 import xyz.mon0mon.chatsample.service.chat.ChatRoomService
@@ -72,12 +76,4 @@ class ChatController(
 
         return chatMessageService.processMessage(userId, roomId, reqPayload.type, reqPayload.content)
     }
-
-    @MessageExceptionHandler(JwtSecurityException::class)
-    fun handleJwtException(ex: JwtSecurityException): ErrorMessage {
-        // 클라이언트가 이해할 수 있는 포맷의 에러 메시지 반환
-        return ErrorMessage(status = ex.httpStatus.value(), message = ex.message)
-    }
 }
-
-data class ErrorMessage(val status: Int, val message: String)
