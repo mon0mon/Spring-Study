@@ -28,7 +28,7 @@ class StompWebSocketConfig(
     }
 
     override fun configureMessageBroker(registry: MessageBrokerRegistry) {
-        registry.enableSimpleBroker("/topic", "/queue")
+        registry.enableSimpleBroker("/topic", "/queue", "/user")
         registry.setApplicationDestinationPrefixes("/app")
         registry.setUserDestinationPrefix("/user")
     }

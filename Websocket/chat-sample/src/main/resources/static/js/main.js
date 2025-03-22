@@ -70,7 +70,7 @@ function initChat() {
         brokerURL: '/ws/stomp',
 
         // when connection dropped try to reconnect after 5000ms
-        reconnectDelay: 5000,
+        reconnectDelay: 0,
         // client will listen to heartbeats from the server every 4000ms
         heartbeatIncoming: 4000,
         // client will send heartbeats every 4000ms
@@ -94,6 +94,10 @@ function initChat() {
                 console.log(`periodic message : ${response.body}`);
                 // displayMessage('System', data.message);
             });
+
+            stompClient.subscribe(`/user/${auth.id}/queue/errors`, function (response) {
+                console.error('Error message from server: ' + response.body);
+            })
 
             chatRooms.forEach(
                 room => {
