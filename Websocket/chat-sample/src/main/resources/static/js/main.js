@@ -407,12 +407,12 @@ function setConnected(connected) {
 
     if (connected) {
         connectStomp();
-        connectBtn.classList.remove('hidden');
-        disconnectBtn.classList.add('hidden');
-    } else {
-        disconnectStomp();
         connectBtn.classList.add('hidden');
         disconnectBtn.classList.remove('hidden');
+    } else {
+        disconnectStomp();
+        connectBtn.classList.remove('hidden');
+        disconnectBtn.classList.add('hidden');
     }
 }
 
