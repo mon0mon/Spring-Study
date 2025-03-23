@@ -11,6 +11,7 @@ const logoutBtn = document.getElementById('logout');
 const connectBtn = document.getElementById('connect');
 const disconnectBtn = document.getElementById('disconnect');
 const currentRoomElement = document.getElementById('current-room');
+const currentRoomParticipantCount = document.getElementById('current-room-participants-count');
 
 // 상태 변수
 let stompClient = null;
@@ -57,19 +58,6 @@ function login(event) {
             })
             .catch(error => {
                 console.error('Login error:', error);
-                // 로그인 실패시 fallback으로 token 없이 진행
-                // 테스트를 위해 임시 사용자 정보 설정
-                auth = { id: 'user1', name: 'User1' };
-                document.getElementById('connected-user-username').textContent = auth.name;
-
-                // 테스트용 채팅방 데이터
-                chatRooms = [
-                    { id: '1', name: 'ChatRoom-1', participants: 2, unreadCount: 2 },
-                    { id: '2', name: 'ChatRoom-2', participants: 2, unreadCount: 2 }
-                ];
-                displayChatRooms(chatRooms);
-
-                showChatPage();
             });
     }
 }
@@ -88,21 +76,13 @@ function displayChatRooms(rooms) {
         const roomInfo = document.createElement('div');
         roomInfo.classList.add('room-info');
 
-        const roomIcon = document.createElement('img');
-        roomIcon.src = 'img/user_icon.png';
-        roomIcon.alt = 'Room Icon';
-        roomIcon.classList.add('user-profile-img', 'me-2');
-        roomIcon.style.width = '30px';
-        roomIcon.style.height = '30px';
-
         const roomName = document.createElement('span');
         roomName.textContent = room.name;
 
         const participantsCount = document.createElement('span');
         participantsCount.classList.add('ms-2', 'text-muted');
-        participantsCount.textContent = room.participants;
+        participantsCount.textContent = room.participants.length;
 
-        roomInfo.appendChild(roomIcon);
         roomInfo.appendChild(roomName);
         roomInfo.appendChild(participantsCount);
 
@@ -142,6 +122,7 @@ function selectChatRoom(room) {
 
     selectedRoomId = room.id;
     currentRoomElement.textContent = room.name;
+    currentRoomParticipantCount.textContent = room.participants.length;
 
     // 채팅방의 메시지 불러오기
     fetchAndDisplayRoomChat(room.id);
@@ -205,14 +186,6 @@ async function findAndDisplayChatRooms() {
         showChatPage();
     } catch (error) {
         console.error('Error fetching chat rooms:', error);
-        // 테스트를 위한 임시 데이터
-        chatRooms = [
-            { id: '1', name: 'ChatRoom-1', participants: 2, unreadCount: 2 },
-            { id: '2', name: 'ChatRoom-2', participants: 2, unreadCount: 2 }
-        ];
-        displayChatRooms(chatRooms);
-
-        showChatPage();
     }
 }
 
@@ -231,26 +204,6 @@ async function fetchAndDisplayRoomChat(roomId) {
         displayChatMessages(roomChat.messages);
     } catch (error) {
         console.error('Error fetching chat history:', error);
-
-        // 테스트를 위한 임시 메시지 데이터
-        const testMessages = [
-            {
-                id: '1',
-                sender: 'User1',
-                content: 'Hello Java!',
-                timestamp: new Date().setHours(11, 35),
-                senderImage: 'img/user_icon.png'
-            },
-            {
-                id: '2',
-                sender: 'User2',
-                content: 'Hello Java!',
-                timestamp: new Date().setHours(11, 36),
-                senderImage: 'img/user_icon.png'
-            }
-        ];
-
-        displayChatMessages(testMessages);
     }
 }
 
@@ -307,7 +260,6 @@ function displayMessage(message) {
     if (isCurrentUser) {
         messageContainer.appendChild(messageInfo);
         messageContainer.appendChild(messageBubble);
-        messageContainer.appendChild(profileImg);
     } else {
         messageContainer.appendChild(profileImg);
         messageContainer.appendChild(messageBubble);
@@ -373,9 +325,6 @@ function showChatPage() {
         if (userCookie) {
             auth = JSON.parse(decodeURIComponent(userCookie));
             document.getElementById('connected-user-username').textContent = auth.name;
-        } else {
-            // 테스트용 기본값
-            document.getElementById('connected-user-username').textContent = 'User1';
         }
     }
 }

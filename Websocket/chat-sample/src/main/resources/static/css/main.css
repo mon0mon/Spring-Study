@@ -57,7 +57,6 @@ body {
 .message-container.sender {
     align-self: flex-end;
     margin-left: auto;
-    flex-direction: row-reverse;
 }
 
 .message-container.receiver {

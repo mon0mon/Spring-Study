@@ -17,6 +17,7 @@ class ChatRoomData(
     val name = chatRoom.name
     val participants = participants.map { ChatRoomParticipantData(it) }
     val owner = chatRoom.owner.name
+    val unreadCount = 2
 }
 
 class ChatRoomParticipantData(
