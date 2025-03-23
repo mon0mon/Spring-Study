@@ -16,8 +16,8 @@ const currentRoomParticipantCount = document.getElementById('current-room-partic
 // 상태 변수
 let stompClient = null;
 let selectedRoomId = null;
-let accessToken = null;
-let auth = null;
+let accessToken = getCookie('accessToken');
+let auth = getCookie('user') ? JSON.parse(decodeURIComponent(getCookie('user'))) : null;
 let chatRooms = [];
 let isConnected = true;
 let isScrolledToBottom = true; // 스크롤이 최하단에 있는지 여부
@@ -48,10 +48,11 @@ function login(event) {
             })
             .then(data => {
                 accessToken = data.accessToken;
-                // accessToken을 cookie에 저장
-                document.cookie = "accessToken=" + accessToken + "; path=/";
-                // 추가: user 값을 cookie에 저장 (JSON 문자열 형태로)
-                document.coookie = "user=" + encodeURIComponent(JSON.stringify(data.user)) + "; path=/";
+                auth = data.user;
+
+                setCookie('accessToken', accessToken, 10);
+                setCookie('user', encodeURIComponent(JSON.stringify(auth)), 10);
+
                 showAlert('login', 'success'); // aria-label: Success
                 findAndDisplayChatRooms().then(() => {
                     console.log("Chat rooms loaded");
@@ -568,7 +569,12 @@ function showAlert(message, type) {
     }, 5000);
 }
 
-
+function setCookie(cname, cvalue, minutes) {
+    const d = new Date();
+    d.setTime(d.getTime() + (minutes*60*1000));
+    let expires = "expires="+ d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
 
 // 이벤트 리스너
 usernameForm.addEventListener('submit', login);
