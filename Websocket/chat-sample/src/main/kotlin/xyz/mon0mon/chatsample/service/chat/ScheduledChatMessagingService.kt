@@ -6,6 +6,7 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import xyz.mon0mon.chatsample.repository.chat.ChatRoomRepository
 import java.time.OffsetDateTime
+import java.util.concurrent.TimeUnit
 
 private val logger = KotlinLogging.logger { }
 
@@ -16,8 +17,7 @@ class ScheduledChatMessagingService(
 ) {
 
     // 10초마다 모든 채널에 메시지를 보냅니다.
-//    @Scheduled(fixedRate = 10_000)
-    @Scheduled(fixedRate = 2_000)
+    @Scheduled(fixedRate = 10, timeUnit = TimeUnit.SECONDS)
     fun sendScheduledMessage() {
 
         logger.debug { "Broadcasting Scheduled Message to All Channels" }

@@ -19,7 +19,8 @@ let selectedRoomId = null;
 let accessToken = null;
 let auth = null;
 let chatRooms = [];
-let isConnected = false;
+let isConnected = true;
+let isScrolledToBottom = true; // 스크롤이 최하단에 있는지 여부
 
 // 쿠키에서 특정 이름의 값을 가져오는 헬퍼 함수
 function getCookie(name) {
@@ -76,9 +77,11 @@ function displayChatRooms(rooms) {
         const roomInfo = document.createElement('div');
         roomInfo.classList.add('room-info');
 
+        // 채팅방 이름
         const roomName = document.createElement('span');
         roomName.textContent = room.name;
 
+        // 참여자 수
         const participantsCount = document.createElement('span');
         participantsCount.classList.add('ms-2', 'text-muted');
         participantsCount.textContent = room.participants.length;
@@ -146,116 +149,24 @@ function initChat() {
     connectBtn.addEventListener('click', toggleConnection);
     disconnectBtn.addEventListener('click', toggleConnection);
 
-    toggleConnection()
+    // 스크롤 이벤트 리스너 추가
+    chatArea.addEventListener('scroll', handleScroll);
+
+    setConnected(true)
+}
+
+// 스크롤 이벤트 핸들러
+function handleScroll() {
+    // 스크롤이 최하단에 있는지 확인
+    const isAtBottom = chatArea.scrollHeight - chatArea.clientHeight <= chatArea.scrollTop + 1;
+    isScrolledToBottom = isAtBottom;
 }
 
 // 연결 상태 토글
 function toggleConnection() {
     isConnected = !isConnected;
 
-    if (isConnected) {
-        connectStomp();
-        setConnected(true);
-    } else {
-        disconnectStomp();
-        setConnected(false);
-    }
-}
-
-// connectBtn 상태 변경
-function setConnected(connected) {
-    isConnected = connected;
-    connectBtn.classList.toggle('hidden', connected);
-    disconnectBtn.classList.toggle('hidden', !connected);
-}
-
-// STOMP 연결
-function connectStomp() {
-    const headers = {
-        Authorization: 'Bearer ' + accessToken
-    };
-
-    const stompConfig = {
-        // WebSocket Server URL
-        brokerURL: '/ws/stomp',
-
-        // when connection dropped try to reconnect after 5000ms
-        reconnectDelay: 0,
-        // client will listen to heartbeats from the server every 4000ms
-        heartbeatIncoming: 4000,
-        // client will send heartbeats every 4000ms
-        heartbeatOutgoing: 4000,
-
-        debug: function (str) {
-            console.log('STOMP: ' + str)
-        },
-
-        connectHeaders: headers,
-
-        onConnect: function (frame) {
-            // Do something, all subscribes must be done is this callback
-            // This is needed because this will be executed after a (re)connect
-
-            console.log('Client connected: ' + frame);
-            setConnected(true);
-
-            stompClient.subscribe('/topic/periodic', function (response) {
-                const data = JSON.parse(response.body);
-                console.log(`periodic message : ${response.body}`);
-                // displayMessage('System', data.message);
-            });
-
-            stompClient.subscribe(`/user/${auth.id}/queue/errors`, function (response) {
-                console.error('Error message from server: ' + response.body);
-            })
-
-            chatRooms.forEach(
-                room => {
-                    stompClient.subscribe(`/topic/chat/${room.id}`, function (response) {
-                        onMessageReceived(response);
-                    });
-                }
-            );
-        },
-
-        onStompError: function (frame) {
-            // Will be invoked in case of error encountered at Broker
-            // Bad login/passcode typically will cause an error
-            // Complaint brokers will set `message` header with a brief message. Body may contain details.
-            // Compliant brokers will terminate the connection after any error
-            console.log('Broker reported error: ' + frame.headers['message']);
-            console.log('Additional details: ' + frame.body);
-            setConnected(false);
-        },
-
-        onDisconnect: function (frame) {
-            console.log('Client disconnected: ' + frame);
-            setConnected(false);
-        }
-    }
-
-    // stompjs 사용: webstomp.over -> Stomp.over
-    stompClient = new StompJs.Client(stompConfig);
-
-    stompClient.activate();
-}
-
-// Stomp 연결 종료
-function disconnectStomp() {
-    if (stompClient) {
-        stompClient.deactivate();
-    }
-}
-
-// STOMP 메시지 수신 처리
-function onMessageReceived(payload) {
-    console.log('Message received', payload);
-    const message = JSON.parse(payload.body);
-    // 현재 선택된 채팅방의 메시지라면 표시
-    if (selectedRoomId && message.chatRoomId == selectedRoomId) {
-        displayMessage(message);
-        chatArea.scrollTop = chatArea.scrollHeight;
-    }
+    setConnected(isConnected);
 }
 
 // 채팅방 목록 가져오기 (/rooms 엔드포인트)
@@ -314,7 +225,7 @@ function displayChatMessages(messages) {
     });
 
     // 스크롤을 최하단으로 이동
-    chatArea.scrollTop = chatArea.scrollHeight;
+    scrollToBottom();
 }
 
 // 채팅 메시지 DOM 추가
@@ -324,12 +235,6 @@ function displayMessage(message) {
     const messageContainer = document.createElement('div');
     messageContainer.classList.add('message-container');
     messageContainer.classList.add(isCurrentUser ? 'sender' : 'receiver');
-
-    // 프로필 이미지
-    const profileImg = document.createElement('img');
-    profileImg.src = message.senderImage || 'img/user_icon.png';
-    profileImg.alt = message.sender;
-    profileImg.classList.add('user-profile-img');
 
     // 메시지 내용 컨테이너
     const messageContent = document.createElement('div');
@@ -356,15 +261,37 @@ function displayMessage(message) {
 
     // 메시지 컨테이너에 요소 추가
     if (isCurrentUser) {
+        // 내가 보낸 메시지는 프로필 이미지 없이 내용과 시간만 표시
         messageContainer.appendChild(messageContent);
         messageContainer.appendChild(messageTime);
     } else {
+        // 다른 사용자가 보낸 메시지는 프로필 이미지, 내용, 시간 표시
+        const profileImg = document.createElement('img');
+        profileImg.src = message.senderImage || 'img/user_icon.png';
+        profileImg.alt = message.sender;
+        profileImg.classList.add('user-profile-img');
+
         messageContainer.appendChild(profileImg);
         messageContainer.appendChild(messageContent);
         messageContainer.appendChild(messageTime);
     }
 
+    // 현재 스크롤 위치 확인
+    const wasScrolledToBottom = isScrolledToBottom;
+
+    // 메시지 추가
     chatArea.appendChild(messageContainer);
+
+    // 스크롤이 최하단에 있었다면 자동 스크롤
+    if (wasScrolledToBottom) {
+        scrollToBottom();
+    }
+}
+
+// 스크롤을 최하단으로 이동
+function scrollToBottom() {
+    chatArea.scrollTop = chatArea.scrollHeight;
+    isScrolledToBottom = true;
 }
 
 // 시간 포맷팅 (AM/PM)
@@ -384,25 +311,140 @@ function sendMessage(event) {
     const messageContent = messageInput.value.trim();
     if (!messageContent || !selectedRoomId) return;
 
+    if (stompClient && stompClient.connected) {
+        // STOMP를 통한 메시지 전송
+        const chatMessage = {
+            type: "SEND",
+            content: messageContent,
+        };
+
+        const tx = stompClient.begin();
+        stompClient.publish({
+            destination: `/app/chat/${selectedRoomId}`,
+            headers: {transaction: tx.id, 'Authorization': 'Bearer ' + accessToken},
+            body: JSON.stringify(chatMessage)
+        });
+        tx.commit();
+    } else {
+        console.error('Error sending message');
+    }
+
     // 입력 필드 초기화
     messageInput.value = '';
+}
 
-    const chatMessage = {
-        type: "SEND",
-        content: messageContent,
-    };
+// STOMP 연결
+function connectStomp() {
+    if (!stompClient) {
+        const headers = {
+            Authorization: 'Bearer ' + accessToken
+        };
 
-    // sent message with acknowledge with a transaction
-    // https://stomp-js.github.io/guide/stompjs/using-stompjs-v5.html#transactions
-    const tx = stompClient.begin();
-    stompClient.publish(
-        {
-            destination: `/app/chat/${selectedRoomId}`,
-            headers: {transaction: tx.id, 'Authorization' : 'Bearer ' + accessToken},
-            body: JSON.stringify(chatMessage)
+        const stompConfig = {
+            brokerURL: '/ws/stomp',
+            reconnectDelay: 5000,
+            heartbeatIncoming: 4000,
+            heartbeatOutgoing: 4000,
+            connectHeaders: headers,
+
+            onConnect: function (frame) {
+                console.log('Client connected: ' + frame);
+                setConnected(true);
+
+                // 주기적 메시지 구독
+                stompClient.subscribe('/topic/periodic', function (response) {
+                    const data = JSON.parse(response.body);
+                    console.log(`periodic message : ${response.body}`);
+                });
+
+                // 에러 메시지 구독
+                if (auth && auth.id) {
+                    stompClient.subscribe(`/user/${auth.id}/queue/errors`, function (response) {
+                        console.error('Error message from server: ' + response.body);
+                    });
+                }
+
+                // 채팅방 메시지 구독
+                chatRooms.forEach(room => {
+                    stompClient.subscribe(`/topic/chat/${room.id}`, function (response) {
+                        onMessageReceived(response);
+                    });
+                });
+            },
+
+            onStompError: function (frame) {
+                console.log('Broker reported error: ' + frame.headers['message']);
+                console.log('Additional details: ' + frame.body);
+                setConnected(false);
+            },
+
+            onDisconnect: function (frame) {
+                console.log('Client disconnected: ' + frame);
+                setConnected(false);
+            }
+        };
+
+        stompClient = new StompJs.Client(stompConfig);
+        stompClient.activate();
+    }
+}
+
+// STOMP 연결 해제
+function disconnectStomp() {
+    if (stompClient) {
+        stompClient.deactivate();
+        stompClient = null;
+    }
+}
+
+// 연결 상태 설정
+function setConnected(connected) {
+    isConnected = connected;
+
+    if (connected) {
+        connectStomp();
+    } else {
+        disconnectStomp();
+    }
+
+    connectBtn.classList.toggle('hidden', connected);
+    disconnectBtn.classList.toggle('hidden', !connected);
+}
+
+// STOMP 메시지 수신 처리
+function onMessageReceived(payload) {
+    console.log('Message received', payload);
+    const message = JSON.parse(payload.body);
+
+    // 현재 선택된 채팅방의 메시지라면 표시
+    if (selectedRoomId && message.chatRoomId == selectedRoomId) {
+        displayMessage(message);
+    } else {
+        // 다른 채팅방의 메시지인 경우 해당 채팅방의 읽지 않은 메시지 수 증가
+        updateUnreadCount(message.chatRoomId);
+    }
+}
+
+// 읽지 않은 메시지 수 업데이트
+function updateUnreadCount(roomId) {
+    const room = chatRooms.find(r => r.id === roomId);
+    if (room) {
+        room.unreadCount = (room.unreadCount || 0) + 1;
+
+        // UI 업데이트
+        const roomElement = document.querySelector(`#connectedUsers .list-group-item[data-room-id="${roomId}"]`);
+        if (roomElement) {
+            let unreadBadge = roomElement.querySelector('.unread-badge');
+
+            if (!unreadBadge) {
+                unreadBadge = document.createElement('span');
+                unreadBadge.classList.add('unread-badge');
+                roomElement.appendChild(unreadBadge);
+            }
+
+            unreadBadge.textContent = room.unreadCount;
         }
-    );
-    tx.commit();
+    }
 }
 
 // 로그인 페이지 표시
@@ -431,6 +473,9 @@ function showChatPage() {
 
 // 로그아웃 처리
 function onLogout() {
+    // STOMP 연결 해제
+    disconnectStomp();
+
     // 쿠키 삭제
     deleteCookie();
     clearData();
