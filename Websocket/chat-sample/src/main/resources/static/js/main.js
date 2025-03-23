@@ -51,7 +51,8 @@ function login(event) {
                 // accessToken을 cookie에 저장
                 document.cookie = "accessToken=" + accessToken + "; path=/";
                 // 추가: user 값을 cookie에 저장 (JSON 문자열 형태로)
-                document.cookie = "user=" + encodeURIComponent(JSON.stringify(data.user)) + "; path=/";
+                document.coookie = "user=" + encodeURIComponent(JSON.stringify(data.user)) + "; path=/";
+                showAlert('login', 'success'); // aria-label: Success
                 findAndDisplayChatRooms().then(() => {
                     console.log("Chat rooms loaded");
                     initChat();
@@ -350,6 +351,7 @@ function connectStomp() {
             onConnect: function (frame) {
                 console.log('Client connected: ' + frame);
                 setConnected(true);
+                showAlert('STOMP Connected Successfully', 'info'); // aria-label: Info
 
                 // 주기적 메시지 구독
                 stompClient.subscribe('/topic/periodic', function (response) {
@@ -376,11 +378,13 @@ function connectStomp() {
                 console.log('Broker reported error: ' + frame.headers['message']);
                 console.log('Additional details: ' + frame.body);
                 setConnected(false);
+                showAlert('STOMP Error', 'danger'); // aria-label: Danger
             },
 
             onDisconnect: function (frame) {
                 console.log('Client disconnected: ' + frame);
                 setConnected(false);
+                showAlert('STOMP Disconnected Successfully', 'info'); // aria-label: Info
             }
         };
 
@@ -403,12 +407,13 @@ function setConnected(connected) {
 
     if (connected) {
         connectStomp();
+        connectBtn.classList.remove('hidden');
+        disconnectBtn.classList.add('hidden');
     } else {
         disconnectStomp();
+        connectBtn.classList.add('hidden');
+        disconnectBtn.classList.remove('hidden');
     }
-
-    connectBtn.classList.toggle('hidden', connected);
-    disconnectBtn.classList.toggle('hidden', !connected);
 }
 
 // STOMP 메시지 수신 처리
@@ -480,6 +485,8 @@ function onLogout() {
     deleteCookie();
     clearData();
     showLoginPage();
+
+    showAlert('logout', 'success'); // aria-label: Success
 }
 
 // 쿠키 삭제
@@ -495,6 +502,73 @@ function clearData() {
     auth = null;
     chatArea.innerHTML = '';
 }
+
+// Bootstrap Alert 생성 함수 (SVG 아이콘 포함)
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} d-flex align-items-center alert-dismissible fade show`;
+    alertDiv.setAttribute('role', 'alert');
+
+    let ariaLabel;
+    let iconId;
+    if (type === 'success') {
+        ariaLabel = 'Success:';
+        iconId = 'check-circle-fill';
+    } else if (type === 'info') {
+        ariaLabel = 'Info:';
+        iconId = 'info-fill';
+    } else if (type === 'danger') {
+        ariaLabel = 'Danger:';
+        iconId = 'exclamation-triangle-fill';
+    } else {
+        // 기본값 설정
+        ariaLabel = 'Info:';
+        iconId = 'info-fill';
+    }
+    alertDiv.setAttribute('aria-label', ariaLabel);
+
+    // SVG 아이콘 생성
+    const svgElem = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svgElem.classList.add("bi", "flex-shrink-0", "me-2");
+    svgElem.setAttribute("role", "img");
+    svgElem.setAttribute("aria-label", ariaLabel);
+    svgElem.setAttribute("height", "16")
+    svgElem.setAttribute("width", "16")
+
+    // <use> 태그 생성 및 심볼 참조
+    const useElem = document.createElementNS("http://www.w3.org/2000/svg", "use");
+    useElem.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", `#${iconId}`);
+    svgElem.appendChild(useElem);
+
+    // 메시지 컨테이너 생성
+    const messageDiv = document.createElement("div");
+    messageDiv.textContent = message;
+
+    // SVG 아이콘과 메시지 컨테이너를 alertDiv에 추가
+    alertDiv.appendChild(svgElem);
+    alertDiv.appendChild(messageDiv);
+
+    // dismiss 버튼 추가
+    const closeButton = document.createElement('button');
+    closeButton.type = 'button';
+    closeButton.className = 'btn-close';
+    closeButton.setAttribute('data-bs-dismiss', 'alert');
+    closeButton.setAttribute('aria-label', 'Close');
+    alertDiv.appendChild(closeButton);
+
+    // alert-container에 추가 (없으면 document.body에 추가)
+    const container = document.getElementById('alert-container') || document.body;
+    container.appendChild(alertDiv);
+
+    // 5초 후에 alert 자동 제거
+    setTimeout(() => {
+        alertDiv.classList.remove('show');
+        alertDiv.classList.add('hide');
+        setTimeout(() => alertDiv.remove(), 500);
+    }, 5000);
+}
+
+
 
 // 이벤트 리스너
 usernameForm.addEventListener('submit', login);
