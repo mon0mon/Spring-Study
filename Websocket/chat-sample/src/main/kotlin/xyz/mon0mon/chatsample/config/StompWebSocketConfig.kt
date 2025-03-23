@@ -17,7 +17,8 @@ import xyz.mon0mon.chatsample.exception.handler.StompExceptionHandler
 @Configuration
 @EnableWebSocketMessageBroker
 class StompWebSocketConfig(
-    private val authChannelInterceptor: ChannelInterceptor,
+    private val authClientInboundInterceptor: ChannelInterceptor,
+    private val customClientOutboundInterceptor: ChannelInterceptor,
     private val stompExceptionHandler: StompExceptionHandler
 ) : WebSocketMessageBrokerConfigurer {
 
@@ -34,7 +35,11 @@ class StompWebSocketConfig(
     }
 
     override fun configureClientInboundChannel(registration: ChannelRegistration) {
-        registration.interceptors(authChannelInterceptor)
+        registration.interceptors(authClientInboundInterceptor)
+    }
+
+    override fun configureClientOutboundChannel(registration: ChannelRegistration) {
+        registration.interceptors(customClientOutboundInterceptor)
     }
 
     override fun configureMessageConverters(messageConverters: MutableList<MessageConverter?>): Boolean {

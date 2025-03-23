@@ -18,7 +18,7 @@ import java.time.Instant
 private val logger = KotlinLogging.logger { }
 
 @Component
-class AuthChannelInterceptor(
+class AuthClientInboundInterceptor(
     private val jwtTokenProvider: JwtTokenProvider,
     private val eventPublisher: ApplicationEventPublisher
 ) : ChannelInterceptor {
