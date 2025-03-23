@@ -27,7 +27,9 @@ class AuthClientInboundInterceptor(
         logger.debug { "WebSocket Interceptor" }
 
         val accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor::class.java)
-        if (accessor?.command == StompCommand.CONNECT || accessor?.command == StompCommand.SEND) {
+        if (accessor?.command == StompCommand.CONNECT ||
+            accessor?.command == StompCommand.SEND ||
+            accessor?.command == StompCommand.SUBSCRIBE) {
             val token = accessor.getFirstNativeHeader("Authorization")
                 ?: throw JwtSecurityException("Authorization header is missing", HttpStatus.UNAUTHORIZED)
 
@@ -42,11 +44,13 @@ class AuthClientInboundInterceptor(
                 throw JwtSecurityException("Expired or invalid JWT token", HttpStatus.UNAUTHORIZED)
             }
 
-            // JWT 토큰의 만료 시간을 Instant 형태로 추출 (jwtTokenProvider에 getExpiration 메서드가 있다고 가정)
-            val expirationTime: Instant = jwtTokenProvider.getExpiration(jwt)
-            eventPublisher.publishEvent(
-                WebSocketCloseEvent(sessionId = accessor.sessionId!!, expireTime = expirationTime)
-            )
+            if (accessor.command == StompCommand.CONNECT) {
+                // JWT 토큰의 만료 시간을 Instant 형태로 추출 (jwtTokenProvider에 getExpiration 메서드가 있다고 가정)
+                val expirationTime: Instant = jwtTokenProvider.getExpiration(jwt)
+                eventPublisher.publishEvent(
+                    WebSocketCloseEvent(sessionId = accessor.sessionId!!, expireTime = expirationTime)
+                )
+            }
 
             val authentication = jwtTokenProvider.getAuthentication(jwt)
             accessor.user = authentication

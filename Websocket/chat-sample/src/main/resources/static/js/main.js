@@ -357,20 +357,20 @@ function connectStomp() {
                 stompClient.subscribe('/topic/periodic', function (response) {
                     const data = JSON.parse(response.body);
                     console.log(`periodic message : ${response.body}`);
-                });
+                }, headers);
 
                 // 에러 메시지 구독
                 if (auth && auth.id) {
                     stompClient.subscribe(`/user/${auth.id}/queue/errors`, function (response) {
                         console.error('Error message from server: ' + response.body);
-                    });
+                    }, headers);
                 }
 
                 // 채팅방 메시지 구독
                 chatRooms.forEach(room => {
                     stompClient.subscribe(`/topic/chat/${room.id}`, function (response) {
                         onMessageReceived(response);
-                    });
+                    }, headers);
                 });
             },
 
