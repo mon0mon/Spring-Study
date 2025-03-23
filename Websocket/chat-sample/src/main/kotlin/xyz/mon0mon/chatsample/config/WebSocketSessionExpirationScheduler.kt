@@ -53,8 +53,13 @@ class WebSocketSessionExpirationScheduler(
         logger.info { "Disconnecting session $sessionId due to JWT expiration" }
 
         // 해당 세션에 해당하는 사용자의 이름을 찾습니다.
-        val user = simpUserRegistry.users.first { user ->
+        val user = simpUserRegistry.users.firstOrNull() { user ->
             user.sessions.any { session -> session.id == sessionId }
+        }
+
+        if (user == null) {
+            logger.warn { "User not found for session $sessionId" }
+            return
         }
 
         val payloadByte = objectMapper.writeValueAsBytes(StompErrorMessage("SESSION EXPIRED", HttpStatus.UNAUTHORIZED))
