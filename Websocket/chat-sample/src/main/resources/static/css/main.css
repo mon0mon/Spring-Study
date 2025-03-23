@@ -52,11 +52,13 @@ body {
     display: flex;
     margin-bottom: 1rem;
     max-width: 80%;
+    align-items: flex-start;
 }
 
 .message-container.sender {
     align-self: flex-end;
     margin-left: auto;
+    flex-direction: row-reverse;
 }
 
 .message-container.receiver {
@@ -64,44 +66,46 @@ body {
     margin-right: auto;
 }
 
+/* 메시지 내용 컨테이너 */
+.message-content {
+    display: flex;
+    flex-direction: column;
+    margin: 0 10px;
+    flex-grow: 1;
+}
+
+.message-sender {
+    font-weight: bold;
+    margin-bottom: 4px;
+    font-size: 0.9rem;
+}
+
 .message-bubble {
     padding: 0.75rem 1rem;
     border-radius: 1rem;
-    max-width: 100%;
     word-wrap: break-word;
+    width: fit-content;
+    max-width: 100%;
 }
 
 .message-container.sender .message-bubble {
     background-color: #007bff;
     color: white;
     border-top-right-radius: 0;
-    margin-right: 0.5rem;
+    align-self: flex-end;
 }
 
 .message-container.receiver .message-bubble {
     background-color: #f1f0f0;
     color: #212529;
     border-top-left-radius: 0;
-    margin-left: 0.5rem;
-}
-
-.message-info {
-    display: flex;
-    flex-direction: column;
-    font-size: 0.75rem;
-    color: #6c757d;
-}
-
-.message-container.sender .message-info {
-    align-items: flex-end;
-}
-
-.message-container.receiver .message-info {
-    align-items: flex-start;
 }
 
 .message-time {
-    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-top: 4px;
+    white-space: nowrap;
 }
 
 /* 연결 상태 버튼 */

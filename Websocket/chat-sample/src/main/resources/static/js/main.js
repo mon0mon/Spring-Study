@@ -233,37 +233,37 @@ function displayMessage(message) {
     profileImg.alt = message.sender;
     profileImg.classList.add('user-profile-img');
 
-    // 메시지 정보 (발신자, 시간)
-    const messageInfo = document.createElement('div');
-    messageInfo.classList.add('message-info');
+    // 메시지 내용 컨테이너
+    const messageContent = document.createElement('div');
+    messageContent.classList.add('message-content');
 
     // 발신자 이름 (현재 사용자가 아닌 경우에만 표시)
     if (!isCurrentUser) {
-        const senderName = document.createElement('span');
+        const senderName = document.createElement('div');
         senderName.classList.add('message-sender');
         senderName.textContent = message.sender;
-        messageInfo.appendChild(senderName);
+        messageContent.appendChild(senderName);
     }
 
     // 메시지 내용
     const messageBubble = document.createElement('div');
     messageBubble.classList.add('message-bubble');
     messageBubble.textContent = message.content;
+    messageContent.appendChild(messageBubble);
 
     // 시간
-    const messageTime = document.createElement('span');
+    const messageTime = document.createElement('div');
     messageTime.classList.add('message-time');
     messageTime.textContent = formatTime(message.timestamp);
-    messageInfo.appendChild(messageTime);
 
     // 메시지 컨테이너에 요소 추가
     if (isCurrentUser) {
-        messageContainer.appendChild(messageInfo);
-        messageContainer.appendChild(messageBubble);
+        messageContainer.appendChild(messageContent);
+        messageContainer.appendChild(messageTime);
     } else {
         messageContainer.appendChild(profileImg);
-        messageContainer.appendChild(messageBubble);
-        messageContainer.appendChild(messageInfo);
+        messageContainer.appendChild(messageContent);
+        messageContainer.appendChild(messageTime);
     }
 
     chatArea.appendChild(messageContainer);
