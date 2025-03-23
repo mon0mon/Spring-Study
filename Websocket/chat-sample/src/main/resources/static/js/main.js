@@ -19,7 +19,7 @@ let selectedRoomId = null;
 let accessToken = null;
 let auth = null;
 let chatRooms = [];
-let isConnected = true;
+let isConnected = false;
 
 // 쿠키에서 특정 이름의 값을 가져오는 헬퍼 함수
 function getCookie(name) {
@@ -145,6 +145,8 @@ function initChat() {
     // 테스트를 위해 연결 상태 토글 기능만 구현
     connectBtn.addEventListener('click', toggleConnection);
     disconnectBtn.addEventListener('click', toggleConnection);
+
+    toggleConnection()
 }
 
 // 연결 상태 토글
@@ -152,11 +154,107 @@ function toggleConnection() {
     isConnected = !isConnected;
 
     if (isConnected) {
-        connectBtn.classList.remove('hidden');
-        disconnectBtn.classList.add('hidden');
+        connectStomp();
+        setConnected(true);
     } else {
-        connectBtn.classList.add('hidden');
-        disconnectBtn.classList.remove('hidden');
+        disconnectStomp();
+        setConnected(false);
+    }
+}
+
+// connectBtn 상태 변경
+function setConnected(connected) {
+    isConnected = connected;
+    connectBtn.classList.toggle('hidden', connected);
+    disconnectBtn.classList.toggle('hidden', !connected);
+}
+
+// STOMP 연결
+function connectStomp() {
+    const headers = {
+        Authorization: 'Bearer ' + accessToken
+    };
+
+    const stompConfig = {
+        // WebSocket Server URL
+        brokerURL: '/ws/stomp',
+
+        // when connection dropped try to reconnect after 5000ms
+        reconnectDelay: 0,
+        // client will listen to heartbeats from the server every 4000ms
+        heartbeatIncoming: 4000,
+        // client will send heartbeats every 4000ms
+        heartbeatOutgoing: 4000,
+
+        debug: function (str) {
+            console.log('STOMP: ' + str)
+        },
+
+        connectHeaders: headers,
+
+        onConnect: function (frame) {
+            // Do something, all subscribes must be done is this callback
+            // This is needed because this will be executed after a (re)connect
+
+            console.log('Client connected: ' + frame);
+            setConnected(true);
+
+            stompClient.subscribe('/topic/periodic', function (response) {
+                const data = JSON.parse(response.body);
+                console.log(`periodic message : ${response.body}`);
+                // displayMessage('System', data.message);
+            });
+
+            stompClient.subscribe(`/user/${auth.id}/queue/errors`, function (response) {
+                console.error('Error message from server: ' + response.body);
+            })
+
+            chatRooms.forEach(
+                room => {
+                    stompClient.subscribe(`/topic/chat/${room.id}`, function (response) {
+                        onMessageReceived(response);
+                    });
+                }
+            );
+        },
+
+        onStompError: function (frame) {
+            // Will be invoked in case of error encountered at Broker
+            // Bad login/passcode typically will cause an error
+            // Complaint brokers will set `message` header with a brief message. Body may contain details.
+            // Compliant brokers will terminate the connection after any error
+            console.log('Broker reported error: ' + frame.headers['message']);
+            console.log('Additional details: ' + frame.body);
+            setConnected(false);
+        },
+
+        onDisconnect: function (frame) {
+            console.log('Client disconnected: ' + frame);
+            setConnected(false);
+        }
+    }
+
+    // stompjs 사용: webstomp.over -> Stomp.over
+    stompClient = new StompJs.Client(stompConfig);
+
+    stompClient.activate();
+}
+
+// Stomp 연결 종료
+function disconnectStomp() {
+    if (stompClient) {
+        stompClient.deactivate();
+    }
+}
+
+// STOMP 메시지 수신 처리
+function onMessageReceived(payload) {
+    console.log('Message received', payload);
+    const message = JSON.parse(payload.body);
+    // 현재 선택된 채팅방의 메시지라면 표시
+    if (selectedRoomId && message.chatRoomId == selectedRoomId) {
+        displayMessage(message.sender, message.content);
+        chatArea.scrollTop = chatArea.scrollHeight;
     }
 }
 
