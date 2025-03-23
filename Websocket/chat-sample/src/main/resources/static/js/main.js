@@ -253,7 +253,7 @@ function onMessageReceived(payload) {
     const message = JSON.parse(payload.body);
     // 현재 선택된 채팅방의 메시지라면 표시
     if (selectedRoomId && message.chatRoomId == selectedRoomId) {
-        displayMessage(message.sender, message.content);
+        displayMessage(message);
         chatArea.scrollTop = chatArea.scrollHeight;
     }
 }
@@ -384,23 +384,25 @@ function sendMessage(event) {
     const messageContent = messageInput.value.trim();
     if (!messageContent || !selectedRoomId) return;
 
-    // 실제 환경에서는 서버로 메시지 전송
-    // 테스트를 위해 즉시 메시지 표시
-    const newMessage = {
-        id: Date.now().toString(),
-        sender: auth?.name || 'User1',
-        content: messageContent,
-        timestamp: Date.now(),
-        senderImage: 'img/user_icon.png'
-    };
-
-    displayMessage(newMessage);
-
     // 입력 필드 초기화
     messageInput.value = '';
 
-    // 스크롤을 최하단으로 이동
-    chatArea.scrollTop = chatArea.scrollHeight;
+    const chatMessage = {
+        type: "SEND",
+        content: messageContent,
+    };
+
+    // sent message with acknowledge with a transaction
+    // https://stomp-js.github.io/guide/stompjs/using-stompjs-v5.html#transactions
+    const tx = stompClient.begin();
+    stompClient.publish(
+        {
+            destination: `/app/chat/${selectedRoomId}`,
+            headers: {transaction: tx.id, 'Authorization' : 'Bearer ' + accessToken},
+            body: JSON.stringify(chatMessage)
+        }
+    );
+    tx.commit();
 }
 
 // 로그인 페이지 표시
