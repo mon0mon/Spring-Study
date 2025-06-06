@@ -8,6 +8,7 @@ import org.springframework.web.socket.CloseStatus
 import org.springframework.web.socket.TextMessage
 import org.springframework.web.socket.WebSocketSession
 import org.springframework.web.socket.handler.TextWebSocketHandler
+import xyz.mon0mon.chatwebsocket.security.DefaultSecurityContext
 import java.time.OffsetDateTime
 import java.util.concurrent.CopyOnWriteArraySet
 
@@ -28,6 +29,8 @@ class PeriodicWebSocketHandler(
     }
 
     override fun afterConnectionEstablished(session: WebSocketSession) {
+        logger.info { "connected user : ${DefaultSecurityContext.user()}" }
+
         sessions.add(session)
         super.afterConnectionEstablished(session)
     }
