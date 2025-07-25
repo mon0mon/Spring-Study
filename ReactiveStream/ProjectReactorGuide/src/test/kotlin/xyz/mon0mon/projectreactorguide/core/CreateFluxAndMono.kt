@@ -1,6 +1,8 @@
 package xyz.mon0mon.projectreactorguide.core
 
 import org.junit.jupiter.api.Test
+import org.reactivestreams.Subscription
+import reactor.core.publisher.BaseSubscriber
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
@@ -65,5 +67,30 @@ class CreateFluxAndMono {
             { println("Error: $it") },
             { println("Done") }
         )
+    }
+
+    @Test
+    fun `BaseSubscriber example`() {
+        val ss = SampleSubscriber<Int>()
+
+        val ints = Flux.range(1,4)
+
+        ints.subscribe(ss)
+    }
+}
+
+
+/**
+ * Alternative to Lambdas
+ */
+private class SampleSubscriber<T>: BaseSubscriber<T>() {
+    override fun hookOnSubscribe(subscription: Subscription) {
+        println("Subscribed")
+        request(1)
+    }
+
+    override fun hookOnNext(value: T & Any) {
+        println(value)
+        request(1)
     }
 }
