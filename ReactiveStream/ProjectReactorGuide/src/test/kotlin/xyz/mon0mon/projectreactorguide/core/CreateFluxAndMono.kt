@@ -73,9 +73,25 @@ class CreateFluxAndMono {
     fun `BaseSubscriber example`() {
         val ss = SampleSubscriber<Int>()
 
-        val ints = Flux.range(1,4)
+        val ints = Flux.range(1, 4)
 
         ints.subscribe(ss)
+    }
+
+    @Test
+    fun `On Backpressure and Ways to Reshape Requests`() {
+        Flux.range(1, 10)
+            .doOnRequest { println("request of $it") }
+            .subscribe(object : BaseSubscriber<Int>() {
+                override fun hookOnSubscribe(subscription: Subscription) {
+                    request(1)
+                }
+
+                override fun hookOnNext(value: Int) {
+                    println("Cancelling after having received $value")
+                    cancel()
+                }
+            })
     }
 }
 
@@ -83,7 +99,7 @@ class CreateFluxAndMono {
 /**
  * Alternative to Lambdas
  */
-private class SampleSubscriber<T>: BaseSubscriber<T>() {
+private class SampleSubscriber<T> : BaseSubscriber<T>() {
     override fun hookOnSubscribe(subscription: Subscription) {
         println("Subscribed")
         request(1)
